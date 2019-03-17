@@ -1,0 +1,34 @@
+import xsdk ;
+
+xsdkhw example-hw
+  : # sources
+     example.hdf
+  : # requirements
+  : # default-build
+  : # usage-requirements
+  ;
+
+xsdkbsp example-bsp
+  : # sources
+     example-hw
+  : # requirements
+    <variant>release
+
+    <xsdk-configuration>"sleep_time psu_ttc_3"
+    <xsdk-configuration>"-proc a b"
+    <xsdk-configuration>"-os c d"
+    <xsdk-configuration>"-lib libx e f"
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe example-app
+  : # sources
+    main.cpp
+
+    example-hw
+    example-bsp
+  : # requirements
+  : # default-build
+  : # usage-requirements
+  ;
