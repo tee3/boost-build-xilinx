@@ -1,0 +1,17 @@
+import scanner ;
+import type ;
+
+type.register TCL : tcl ;
+
+class tcl-scanner : common-scanner
+{
+    rule pattern ( )
+    {
+        return
+            "source \(.+\)"
+        ;
+    }
+}
+
+scanner.register tcl-scanner : include ;
+type.set-scanner TCL : tcl-scanner ;

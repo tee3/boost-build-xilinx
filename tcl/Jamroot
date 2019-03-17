@@ -1,0 +1,8 @@
+import tcl ;
+
+make hello.txt : hello.tcl : @run-tcl ;
+
+actions run-tcl
+{
+  tclsh $(>) > $(<)
+}
