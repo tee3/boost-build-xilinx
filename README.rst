@@ -127,3 +127,10 @@ The goal is to able to do something like the following.
     : # default-build
     : # usage-requirements
     ;
+
+Testing
+-------
+
+.. code::
+
+   cd test && b2 --verbose-test -j 8

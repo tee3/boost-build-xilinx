@@ -1,0 +1,74 @@
+# Boost.Build support for the Xilinx SDK (XSDK).
+
+import errors ;
+
+import toolset ;
+import feature ;
+import common ;
+
+import os ;
+
+if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
+{
+  .debug-configuration = true ;
+}
+
+feature.extend target-os :
+  freertos
+  xilsystem
+  ;
+
+rule init ( version ? : command * : options * )
+{
+  # Check that the host operating system is supported.  If it is not,
+  # continue without configuring so we can still build targets that do
+  # not need this toolset.
+  if [ os.name ] = NT || [ os.name ] = CYGWIN || [ os.name ] = LINUX
+  {
+    command = [ common.get-invocation-command xsdk : xsct : $(command) ] ;
+
+    if $(command)
+    {
+      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval 'puts [version]'" ] : "\n" ] ;
+
+      local detected-version-components = [ MATCH "xsct ([0-9][0-9][0-9][0-9]\\.[0-9])" : $(output-lines[1]) ] ;
+      local detected-version = $(detected-version-components[1]) ;
+
+      if ! $(detected-version)
+      {
+        errors.user-error "xsdk: no version detected" ;
+      }
+
+      if $(version)
+      {
+        if $(detected-version) != $(version)
+        {
+          errors.user-error "xsdk: detected version (" $(detected-version) ") does not match desired (" $(version) ")" ;
+        }
+      }
+
+      if $(detected-version)
+      {
+        version = $(detected-version) ;
+      }
+    }
+    else
+    {
+      errors.user-error "xsdk: xsct not found at" $(command) ;
+    }
+
+    root = [ common.get-absolute-tool-path $(command[-1]) ] ;
+    root = $(root:P) ;
+
+    if $(.debug-configuration)
+    {
+      ECHO "xsdk: using xsdk" $(version) "at" $(root) ;
+    }
+
+    toolset.flags xsdk .bin $(condition) : $(root)/bin ;
+  }
+  else
+  {
+    ECHO "xsdk: warning: unsupported operating system" os.name ;
+  }
+}
