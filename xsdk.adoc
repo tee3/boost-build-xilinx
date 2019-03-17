@@ -1,0 +1,11 @@
+= Xilinx SDK (XSDK)
+
+:toc:
+
+== User Manual
+
+== Reference
+
+:leveloffset: +2
+include::xsdk.jam[tag=doc]
+:leveloffset: -2

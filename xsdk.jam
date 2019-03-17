@@ -1,0 +1,176 @@
+#|
+Copyright 2019 Thomas Brown
+Distributed under the Boost Software License, Version 1.0. (See
+accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt)
+|#
+
+# Boost.Build support for the Xilinx SDK (XSDK).
+
+#| tag::doc[]
+
+= Configuration
+
+[source, jam]
+----
+import xsdk ;
+----
+
+The XSDK tool must be configured as any other Boost.Build tool.  The
+tool will automatically detect the location and version of the tool.
+
+[source, jam]
+----
+using xsdk ;
+----
+
+The desired version can be specified.
+
+[source, jam]
+----
+using xsdk : 2018.3 ;
+----
+
+The location can also be specified both with and without a desired
+version.
+
+[source, jam]
+----
+using xsdk : : /opt/Xilinx/SDK/2018.3 ;
+----
+
+Note that running with the `--debug-configuration` option to
+Boost.Build will print the XSDK location and version as well as the
+application templates, operating systems, libraries, and drivers
+supported by the version of the tool configured.
+
+= Toolsets
+
+This module supports the processor-specific `gcc` toolsets delivered
+within the Xilinx XSDK.
+
+Note that in order to choose the correct toolset, the toolset should
+be made conditional on the `instruction-set` in the build system.
+One approach for doing this would be to set project requirements in
+the Jamroot.  This is required because the `toolset` feature cannot
+set in `usage-requirements`.
+
+.`Jamroot`
+[source, jam]
+----
+project
+  : requirements
+    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
+
+    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
+
+    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
+  ;
+----
+
+.`project-config.jam`
+[source, jam]
+----
+using xsdk ;
+
+local xsdk-root = [ xsdk.root ] ;
+
+using gcc : xsdkaarch32 : $(xsdk-root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
+using gcc : xsdkaarch64 : $(xsdk-root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
+
+using gcc : xsdkarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
+
+using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+----
+
+|# # end::doc[]
+
+import os ;
+import path ;
+import common ;
+import errors ;
+
+import toolset ;
+
+if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
+{
+  .debug-configuration = true ;
+}
+
+rule init ( version ? : command * : options * )
+{
+  # Check that the host operating system is supported.  If it is not,
+  # continue without configuring so we can still build targets that do
+  # not need this toolset.
+  if [ os.name ] = NT || [ os.name ] = CYGWIN || [ os.name ] = LINUX
+  {
+    command = [ common.get-invocation-command xsdk : xsct : $(command) ] ;
+
+    if $(command)
+    {
+      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval \"puts [version]\"" ] : "\n" ] ;
+
+      local detected-version-components = [ MATCH "xsct ([0-9][0-9][0-9][0-9]\\.[0-9])" : $(output-lines[1]) ] ;
+      local detected-version = $(detected-version-components[1]) ;
+
+      if ! $(detected-version)
+      {
+        errors.user-error "xsdk: no version detected" ;
+      }
+
+      if $(version)
+      {
+        if $(detected-version) != $(version)
+        {
+          errors.user-error "xsdk: detected version (" $(detected-version) ") does not match desired (" $(version) ")" ;
+        }
+      }
+
+      if $(detected-version)
+      {
+        version = $(detected-version) ;
+      }
+    }
+    else
+    {
+      errors.user-error "xsdk: xsct not found at" $(command) ;
+    }
+
+    .version = $(version) ;
+    .root = [ common.get-absolute-tool-path $(command[-1]) ] ;
+    .root = [ path.make $(.root:D) ] ;
+
+    if $(.debug-configuration)
+    {
+      ECHO "xsdk: using xsdk" $(version) "at" $(.root) ;
+
+      ECHO "xsdk: available application templates" ;
+      ECHO [ SHELL "\"$(.root)/bin/xsct\" -eval \"puts [repo -apps]\"" ] ;
+      ECHO "xsdk: available operating systems" ;
+      ECHO [ SHELL "\"$(.root)/bin/xsct\" -eval \"puts [repo -os]\"" ] ;
+      ECHO "xsdk: available libraries" ;
+      ECHO [ SHELL "\"$(.root)/bin/xsct\" -eval \"puts [repo -libs]\"" ] ;
+      ECHO "xsdk: available drivers" ;
+      ECHO [ SHELL "\"$(.root)/bin/xsct\" -eval \"puts [repo -drivers]\"" ] ;
+    }
+
+    toolset.flags xsdk .xsct $(condition) : $(.root)/bin/xsct ;
+  }
+  else
+  {
+    ECHO "xsdk: warning: unsupported operating system" os.name ;
+  }
+}
+
+# Return XSDK root directory.
+rule root ( )
+{
+  return $(.root) ;
+}
+
+# Return XSDK version.
+rule version ( )
+{
+  return $(.version) ;
+}
