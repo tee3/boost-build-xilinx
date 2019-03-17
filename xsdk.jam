@@ -1,22 +1,16 @@
 # Boost.Build support for the Xilinx SDK (XSDK).
 
+import os ;
+import path ;
+import common ;
 import errors ;
 
 import toolset ;
-import feature ;
-import common ;
-
-import os ;
 
 if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 {
   .debug-configuration = true ;
 }
-
-feature.extend target-os :
-  freertos
-  xilsystem
-  ;
 
 rule init ( version ? : command * : options * )
 {
@@ -29,7 +23,7 @@ rule init ( version ? : command * : options * )
 
     if $(command)
     {
-      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval 'puts [version]'" ] : "\n" ] ;
+      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval \"puts [version]\"" ] : "\n" ] ;
 
       local detected-version-components = [ MATCH "xsct ([0-9][0-9][0-9][0-9]\\.[0-9])" : $(output-lines[1]) ] ;
       local detected-version = $(detected-version-components[1]) ;
@@ -58,17 +52,31 @@ rule init ( version ? : command * : options * )
     }
 
     root = [ common.get-absolute-tool-path $(command[-1]) ] ;
-    root = $(root:P) ;
+    root = [ path.make $(root:D) ] ;
 
     if $(.debug-configuration)
     {
       ECHO "xsdk: using xsdk" $(version) "at" $(root) ;
+
+      ECHO "xsdk: available application templates" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -apps]\"" ] ;
+      ECHO "xsdk: available operating systems" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -os]\"" ] ;
+      ECHO "xsdk: available libraries" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -libs]\"" ] ;
+      ECHO "xsdk: available drivers" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -drivers]\"" ] ;
     }
 
-    toolset.flags xsdk .bin $(condition) : $(root)/bin ;
+    toolset.flags xsdk .xsct $(condition) : $(root)/bin/xsct ;
   }
   else
   {
     ECHO "xsdk: warning: unsupported operating system" os.name ;
   }
+}
+
+rule root ( )
+{
+  return $(root) ;
 }
