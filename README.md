@@ -120,3 +120,9 @@ exe example-app
   : # usage-requirements
   ;
 ```
+
+## Testing
+
+```shell
+cd test && b2 --verbose-test -j 8
+```
