@@ -1,1 +1,17 @@
+# @todo ensure xsdk fails if not support properties
+project
+  : requirements
+    <toolset>gcc-arm7
+
+    <target-os>elf
+
+    <architecture>arm
+    <instruction-set>armv7
+
+    <link>static
+  ;
+
 build-project configure ;
+build-project hw-generator ;
+build-project hw-generator-rule ;
+build-project bsp-generator-rule ;
