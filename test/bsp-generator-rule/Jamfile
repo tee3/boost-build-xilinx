@@ -2,8 +2,8 @@ import ../../xsdk ;
 
 xsdkws ws
   : # sources
-    # /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
-    ../example.hdf
+    /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
+    # ../example.hdf
   : # requirements
     # @todo just use <library>
     #<xsdk-configuration>"-lib xil a b"
