@@ -1,6 +1,6 @@
 # @todo ensure xsdk fails if not support properties
 project
-  : requirements
+  : default-build
     <toolset>gcc-arm7
 
     <target-os>elf

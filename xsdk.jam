@@ -29,14 +29,16 @@ feature.extend instruction-set :
   armv8
   ;
 
-feature.feature xsdk-library : : free ;
-feature.feature xsdk-configuration : : free ;
-feature.feature xsdk-language : c c++ ;
+feature.feature xsdk-library : : optional free ;
+feature.feature xsdk-configuration : : optional free link-incompatible ;
+feature.feature xsdk-language : c c++ : propagated ;
 feature.set-default xsdk-language : c++ ;
-feature.feature xsdk-processor-id : 0 1 2 3 ;
+feature.feature xsdk-processor-id : 0 1 2 3 : propagated ;
 feature.set-default xsdk-processor-id : 0 ;
 
 type.register XSDKWS : xsdkws ;
+
+type.register XSCT : xsct ;
 
 type.register MSS : mss ;
 
@@ -93,10 +95,6 @@ rule init ( version ? : command * : options * )
 
     toolset.flags xsdk .bin $(condition) : $(root)/bin ;
 
-    local available-libs = [ SHELL "$(root)/bin/xsct " ] ;
-
-    echo "available-libs = " $(available-libs) ;
-
     # @todo this is where the compilers are on Linxu
     #using gcc : armr5 : $(root)/gnu/armr5/lin/gcc-arm-non-eabi/bin/g++ ;
     #using gcc : aarch64 : $(root)/gnu/aarch64/lin/gcc-arm-non-eabi/bin/g++ ;
@@ -146,6 +144,9 @@ class ws-generator : generator
     local t ;
 
     t = [ new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    t = [ new file-target $(name) : XSCT : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
     local build-dir = [ $(t).path ] ;
@@ -248,6 +249,9 @@ class ws-generator : generator
 # generators.register [ new ws-generator xsdk.ws-generator : HDF : XSDKWS HDF BIT TCL MSS LIB ] ;
 generators.register [ new ws-generator xsdk.ws-generator : HDF : XSDKWS BIT TCL MSS LIB ] ;
 
+# echo and this don't like each other
+toolset.flags xsdk.ws-generator XSDK_APP : "-app {}"
+
 toolset.flags xsdk.ws-generator XSDK_LIBRARIES <xsdk-library> ;
 
 toolset.flags xsdk.ws-generator XSDK_CONFIGURATIONS <xsdk-configuration> ;
@@ -307,7 +311,7 @@ actions ws-generator
   echo "projects -build -type bsp -name bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo ""
   # @todo generate lang based on sources
-  echo "createapp -name app $(XSDK_LANGUAGE) -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  echo "createapp -name app $(XSDK_APP) $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo ""
   # @todo print out all available options
   echo running the following script -------------------
