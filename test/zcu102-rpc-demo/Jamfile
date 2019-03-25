@@ -1,0 +1,42 @@
+import ../../xsdk ;
+
+local xsdk-root = [ xsdk.root ] ;
+
+local hdf = $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
+
+# @todo add more configurations
+xsdkws ws
+  : # sources
+    $(hdf)
+  : # requirements
+    <target-os>freertos
+
+    <link>static
+
+    <processor>cortex-r5
+
+    <xsdk-template>"OpenAMP RPC Demo"
+
+    <xsdk-library>libmetal
+    <xsdk-library>openamp
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe example
+  : # sources
+    ../example.cpp
+
+    ws
+  : # requirements
+    <target-os>freertos
+
+    <link>static
+
+    <processor>cortex-r5
+
+    <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
+    <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+  : # default-build
+  : # usage-requirements
+  ;

@@ -1,1 +1,13 @@
+project
+  : requirements
+    <processor>cortex-a9:<toolset>gcc-7xilinxaarch32
+    <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
+    <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+    <processor>microblaze:<toolset>gcc-7xilinxmicroblaze
+  ;
+
 build-project configure ;
+
+build-project zcu102 ;
+build-project zcu102-hello ;
+build-project zcu102-rpc-demo ;
