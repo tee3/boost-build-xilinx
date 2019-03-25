@@ -1,3 +1,4 @@
 build-project configure ;
 build-project hw-generator ;
 build-project hw-generator-rule ;
+build-project bsp-generator-rule ;

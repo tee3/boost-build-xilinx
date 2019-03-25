@@ -23,6 +23,16 @@ feature.extend target-os :
   xilsystem
   ;
 
+feature.extend instruction-set :
+  armv8
+  ;
+
+feature.feature xsdk-library : : free ;
+feature.feature xsdk-configuration : : free ;
+
+type.register XSDKBSP ;
+type.register MSS : mss ;
+
 type.register XSDKHW ;
 type.register HDF : hdf ;
 type.register BIT : bit ;
@@ -76,6 +86,10 @@ rule init ( version ? : command * : options * )
     }
 
     toolset.flags xsdk .bin $(condition) : $(root)/bin ;
+
+    # @todo this is where the compilers are on Linxu
+    #using gcc : armr5 : $(root)/gnu/armr5/lin/gcc-arm-non-eabi/bin/g++ ;
+    #using gcc : aarch64 : $(root)/gnu/aarch64/lin/gcc-arm-non-eabi/bin/g++ ;
   }
   else
   {
@@ -149,9 +163,81 @@ class hw-generator : generator
   }
 }
 
+class bsp-generator : generator
+{
+  rule __init__ ( * : * )
+  {
+    generator.__init__ $(1) : $(2) : $(3) : $(4) : $(5) : $(6) : $(7) : $(8) : $(9) ;
+  }
+
+  # @todo this should add libdir, libs, and include path along with bsp
+  rule run ( project name ? : property-set : sources * )
+  {
+    # @todo need to generate the XSDKBSP type
+    echo bsp-generator run --------------------- ;
+    echo $(project) ;
+    echo --------------------- ;
+    echo $(name) ;
+    echo --------------------- ;
+    echo $(property-set) ;
+    echo [ $(property-set).raw ] ;
+    echo --------------------- ;
+    echo $(sources) ;
+    for local s in $(sources)
+    {
+      echo [ $(s).name ] ;
+    }
+    echo --------------------- ;
+
+    local source = $(sources[0]) ;
+
+    if ! $(name)
+    {
+      local tmp = [ generator.determine-output-name $(source) ] ;
+
+      name = $(tmp)hw ;
+    }
+
+    echo "name = $(name)" ;
+
+    local a = [ new action $(source) : xsdk.createbsp : $(property-set) ] ;
+
+    local build-dir = [ $(project).build-dir ] ;
+
+    local virtual-targets ;
+    local t ;
+
+    t = [ new file-target $(name) : XSDKBSP : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    t = [ new file-target system : MSS : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    local shared ;
+    if <link>shared in [ $(property-set).raw ]
+    {
+      shared = true ;
+    }
+
+    t = [ new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(name)/lib : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    for local l in [ $(property-set).get <xsdk-library> ]
+    {
+      t = [ new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(name)/lib : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
+
+    property-set = [ $(property-set).add-raw <include>$(build-dir)/$(name)/include ] ;
+
+    return $(property-set) $(virtual-targets) ;
+  }
+}
+
 # @todo do not generate the HDF target since it might be circular
 #generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW HDF BIT H C TCL ] ;
 generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT H C TCL ] ;
+# @todo could also call out the source files?
+generators.register [ new bsp-generator xsdk.createbsp : XSDKHW : XSDKBSP MSS STATIC_LIB ] ;
 
 # @todo workspace directory based on requirements
 # @todo ask for workspace to be removed prior to building
@@ -177,4 +263,48 @@ actions createhw
   echo "proc psu_init {} {};" > $(<[5])
   echo "void psu_init_gpl ();" > $(<[6])
   echo "void psu_init_gpl () {};" > $(<[7])
+}
+
+toolset.flags xsdk.createbsp XSDK_PROC <instruction-set>armv8 : psu_cortexa53_0 ;
+toolset.flags xsdk.createbsp XSDK_PROC <instruction-set>armv7 : psu_cortexr5_0 ;
+
+toolset.flags xsdk.createbsp XSDK_OS <target-os>elf : standalone ;
+toolset.flags xsdk.createbsp XSDK_OS <target-os>freertos : freertos10_xilinx ;
+toolset.flags xsdk.createbsp XSDK_OS <target-os>xilsystem : xilsystem ;
+
+toolset.flags xsdk.createbsp XSDK_LIBRARIES <xsdk-library> ;
+toolset.flags xsdk.createbsp XSDK_CONFIGURATIONS <xsdk-configuration> ;
+
+newline = "
+" ;
+
+actions createbsp
+{
+  echo -------------------
+  pwd
+  echo -------------------
+  echo $(>)
+  echo -------------------
+  echo $(<)
+  echo -------------------
+  echo "$(XSDK_CONFIGURATIONS)"
+  echo -------------------
+  echo "setws $(>:D)" > .tmp.tcl
+  # @todo how do i get the hardware name from sources or something?  the source should be the hardware name or something
+  echo "loadhw -name $(>:B)" >> .tmp.tcl
+  echo "createbsp -name $(<[1]:B) -proc $(XSDK_PROC) -hwproject hw -os $(XSDK_OS)" >> .tmp.tcl
+  # @todo figure out how to expand this right
+  #echo "configbsp -bsp bsp $(XSDK_CONFIGURATIONS)" >> .tmp.tcl
+  # @todo add a version number?
+  #echo "setlib -bsp bsp -lib $(XSDK_LIBRARIES)" >> .tmp.tcl
+  echo "updatemss -mss $(<[1])/system.mss" >> .tmp.tcl
+  echo "regenbsp -bsp $(<[1]:B)" >> .tmp.tcl
+  echo -------------------
+  cat .tmp.tcl
+  echo -------------------
+  $(.bin)/xsct .tmp.tcl
+  echo -------------------
+  echo "# system.mss" > $(<[2])
+  mkdir -p $(<[2]:D)/include
+  mkdir -p $(<[2]:D)/lib
 }

@@ -1,0 +1,36 @@
+import ../../xsdk ;
+
+xsdkhw ahw
+  : # sources
+    ../example.hdf
+  ;
+
+xsdkbsp absp
+  : # sources
+    ahw
+  : # requirements
+    <target-os>elf
+
+    <architecture>arm
+    <instruction-set>armv7
+
+    # @todo just use <library>
+    <xsdk-library>xilffs
+    <xsdk-library>xilrsa
+
+    # @todo do more configuration to check everything
+    <xsdk-configuration>"sleep_timer psu_ttc_3"
+    <xsdk-configuration>"-lib xil a b"
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe example
+  : # sources
+    ../example.cpp
+
+    absp
+  : # requirements
+  : # default-build
+  : # usage-requirements
+  ;
