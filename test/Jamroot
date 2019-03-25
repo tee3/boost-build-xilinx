@@ -1,1 +1,29 @@
+import xsdk ;
+
+import errors ;
+
+project
+  : requirements
+    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
+    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
+    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
+  ;
+
+local xsdk-root = [ xsdk.root ] ;
+
+if ! $(xsdk-root)
+{
+  errors.user-error "The XSDK root is not set." ;
+}
+
+path-constant zc702-hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZC702_hw_platform/system.hdf ;
+path-constant zcu102-hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
+
 build-project configure ;
+
+build-project zc702-empty ;
+
+build-project zcu102-empty ;
+build-project zcu102-hello ;
+build-project zcu102-rpc-demo ;

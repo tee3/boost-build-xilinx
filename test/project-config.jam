@@ -1,3 +1,22 @@
 import xsdk ;
 
 using xsdk ;
+
+local xsdk-root = [ xsdk.root ] ;
+
+if $(xsdk-root)
+{
+  using gcc : xsdkaarch32 : $(xsdk-root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
+  using gcc : xsdkaarch64 : $(xsdk-root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
+  using gcc : xsdkarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
+
+  using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+}
+else
+{
+  using gcc : xsdkaarch32 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+  using gcc : xsdkaarch64 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+  using gcc : xsdkarmr5 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+
+  # using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+}

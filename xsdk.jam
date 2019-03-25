@@ -44,6 +44,107 @@ Boost.Build will print the XSDK location and version as well as the
 application templates, operating systems, libraries, and drivers
 supported by the version of the tool configured.
 
+= Main Target
+
+This project will add one main target type named `xsdkws`.
+
+[source, jam]
+----
+xsdkws ( name : sources + : requirements * : default-build * : usage-requirements * )
+----
+
+This target will place an application named `app`, several example
+applications (`empty_c`, `empty_cpp`, and `hello`), a board-support
+packaged named `bsp`, and a hardware definition named `hw` within a
+workspace named as defined in the rule, `$(name)`, and provide
+`usage-requirements` to users of the named target.
+
+This target will also create several supporting XSCT scripts in the
+build directory.
+
+The `print.tcl` script will print out all the available configuration
+options for the XSDK Workspace.  This can be useful when developing
+the configuration for a project.
+
+The `run.tcl` script take the any compatible program file as an
+argument and will run the program.  This script can be used with the
+Boost.Build `testing` module as a `<testing.launcher>`.
+
+This target works by creating and running an XSCT script containing
+`xsct` commands with values translated from Boost.Build features such
+as `<instruction-set>`, `<target-os>`, and others.  Some
+representative examples of those `xsct` commands are below.
+
+Create the workspace (`$(build-dir)/$(name).xsdkws`) from the
+properties.
+
+[source, tcl]
+----
+setws $(build-dir)/$(name).xsdkws
+----
+
+Generate the hardware definition (`hw`) from the hardware definition
+file specified in `$(source)`.
+
+[source, tcl]
+----
+createhw -name hw -hwspec $(source:G=)
+----
+
+Generate and build a board-support package (`bsp`) from the hardware
+definition (`hw`), standard Boost.Build features, and free-form
+configuration options.
+
+[source, tcl]
+----
+createbsp -name bsp -proc $(xsdk-instruction-set) -hwproject hw -os $(xsdk-os)
+
+configbsp -bsp bsp sleep_timer psu_ttc_3
+
+updatemss -mss  $ws/bsp/system.mss
+regenbsp -bsp bsp
+
+projects -build -type bsp -name bsp
+----
+
+Generate and build an application (`app`) which provides a
+linker-command file and some options required to properly build an
+application.  This defaults to "Empty Application" if
+`<xsdk-template>` is not defined.  Neither the application template
+nor the application language is required, but can sometimes be useful
+to generate a program that can be used as the basis of your program.
+
+The build script will generate several additional applications for
+comparison.  Building these application is done as a reference to
+debug build issues with programs not built using the XSCT tool as well
+as a way to compare the resulting build options.
+
+* `empty_c` - based on the "Empty Application" template for the C language
+* `empty_cpp` - based on the "Empty Application" template for the C++ language
+* `hello` - based on the "Hello World" or "FreeRTOS Hello World" template for the C language
+
+For example, if `<target-os>` is `elf`, the script generated will be
+something like the following.
+
+[source, tcl]
+----
+createapp -name app       -app {$(xsdk-template)}  -lang $(xsdk-language) -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
+projects -build -type app -name app
+
+createapp -name empty_c   -app {Empty Application} -lang c                -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
+projects -build -type app -name empty_c
+createapp -name empty_cpp -app {Empty Application} -lang c++              -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
+projects -build -type app -name empty_cpp
+createapp -name hello     -app {Hello World}       -lang c                -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
+projects -build -type app -name hello
+
+----
+
+= Suported FPGA
+
+* Zynq UltraScale+ MPSoC
+* Zynq 7000 SoC
+
 = Toolsets
 
 This module supports the processor-specific `gcc` toolsets delivered
@@ -84,19 +185,181 @@ using gcc : xsdkarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-n
 using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
 ----
 
+= Boost.Build Features
+
+The following Boost.Build features are used to configure the XSDK.
+Workspace.
+
+If Boost.Build does not support a required value for a feature, the
+`xsdk` tool will extend the feature with the additional values.
+
+= `<target-os>` - the target operating system
+
+* `elf` - The `standalone` Xilinx operating system.
+* `freertos` - The FreeRTOS operating system for Zynq systems.
+* `xilkernel` - The Xilinx kernel for Microblaze.
+
+= `<instruction-set>` - the instruction set or processor
+
+The hardware definition file defines which processors are available in
+a particular design.  The processors supported by the XSDK are shown
+below.
+
+* `cortex-a9` - Cortex-A9
+* `cortex-a53` - Cortex-A53
+* `cortex-r5` - Cortex-R5
+* `microblaze` - Microblaze
+
+= XSDK-related Features
+
+Boost.Build will generally configure the board-support package given
+Boost.Build features.  These features can be overridden using the
+following toolset flags.
+
+== `xsdk-template`
+
+This feature indicates the application template used to generate the
+application.  The application provides the linker script used by
+programs built with the XSDK Workspace.
+
+The resulting files can be used to create or update the actual
+application code, but are not used when generating programs from the
+XSDK Workspace.
+
+This defaults to an empty application.
+
+== `xsdk-language`
+
+This feature indicates the language used for the application and is
+only required if the application template requires it.
+
+* `c` (default)
+* `c++`
+
+== `xsdk-configuration`
+
+This feature provides information for configuring a board-support
+package.  A configuration is a string added to the end of the call to
+`configbsp`.
+
+The system will generate the following for each
+`<xsdk-configuration>STRING`.
+
+[source, tcl]
+----
+configbps -bsp bsp STRING
+----
+
+== `xsdk-library`
+
+This feature adds Xilinx libraries to the board-support package.
+These are the library names as described in the XSDK documentation.
+
+== `xsdk-processor-prefix`
+
+This should be auto-detected by the system.
+
+== `xsdk-processor-id`
+
+This feature assigns the application to run on a particular processor
+on the SoC, defaulting to 0.
+
 |# # end::doc[]
 
 import os ;
 import path ;
 import common ;
+import print ;
+import sequence ;
 import errors ;
+import assert ;
 
 import toolset ;
+import feature ;
+import type ;
+import "class" ;
+import generators ;
+import property-set ;
 
 if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 {
   .debug-configuration = true ;
 }
+
+feature.feature xsdk-template : : free ;
+feature.feature xsdk-language : c c++ ;
+feature.set-default xsdk-language : c ;
+feature.feature xsdk-configuration : : free link-incompatible ;
+feature.feature xsdk-library : : free link-incompatible ;
+feature.feature xsdk-processor-prefix : : free ;
+feature.feature xsdk-processor-id : 0 1 2 3 : link-incompatible ;
+feature.set-default xsdk-processor-id : 0 ;
+
+feature.feature xsdk-os
+  : # values
+    standalone
+    freertos10_xilinx
+    xilkernel
+  : # attributes
+    propagated optional
+  ;
+
+# @todo until all target-os supported in Boost.Build
+# @todo xilkernel only for microblaze, freertos only zynq
+local target-os-supported =
+  elf
+  freertos
+  xilkernel
+  ;
+for local t in $(target-os-supported)
+{
+  local target-os-values = [ feature.values <target-os> ] ;
+  if ! $(t) in $(target-os-values)
+  {
+    feature.extend target-os : $(t) ;
+  }
+}
+
+feature.feature xsdk-instruction-set
+  : # values
+    # arm
+    cortexa9
+    cortexa53
+    cortexr5
+
+    # xilinx
+    microblaze
+  : # attributes
+    propagated optional
+  ;
+
+# @todo until all instruction-set supported in Boost.Build
+local instruction-set-supported =
+  cortex-a9
+  cortex-a53
+  cortex-r5
+
+  microblaze
+  ;
+for local t in $(instruction-set-supported)
+{
+  local instruction-set-values = [ feature.values <instruction-set> ] ;
+  if ! $(t) in $(instruction-set-values)
+  {
+    feature.extend instruction-set : $(t) ;
+  }
+}
+
+type.register XSDKWS : xsdkws ;
+
+type.register HDF : hdf ;
+
+type.register XSCT : xsct ;
+type.register XSCTRUN : xsctrun ;
+
+type.register MSS : mss ;
+type.register BIT : bit ;
+type.register TCL : tcl ;
 
 rule init ( version ? : command * : options * )
 {
@@ -173,4 +436,845 @@ rule root ( )
 rule version ( )
 {
   return $(.version) ;
+}
+
+# A generator to create an XSDK Workspace.
+class ws-generator : generator
+{
+  import string ;
+  import errors ;
+  import assert ;
+
+  # Initialize.
+  rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
+  {
+    generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
+  }
+
+  # Add usage-requirements and targets generated by the XSDK
+  # Workspace.
+  rule run ( project name ? : property-set : sources * )
+  {
+    property-set = [ $(property-set).add-raw <relevant>toolset ] ;
+    property-set = [ $(property-set).add-raw <relevant>xsdk-language ] ;
+    property-set = [ $(property-set).add-raw <relevant>xsdk-processor-prefix ] ;
+    property-set = [ $(property-set).add-raw <relevant>xsdk-processor-id ] ;
+    property-set = [ $(property-set).add-raw <relevant>target-os ] ;
+    property-set = [ $(property-set).add-raw <relevant>link ] ;
+    property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
+
+    # @todo is dynamic linking possible?
+####    if [ $(property-set).get <link> ] != static
+####    {
+####      errors.error "<link> must be static" ;
+####    }
+
+    if ! [ $(property-set).get <instruction-set> ]
+    {
+      errors.error "<instruction-set> must be set" ;
+    }
+
+    local xsdk-os = [ target-os-to-xsdk [ $(property-set).get <target-os> ] ] ;
+    if ! $(xsdk-os)
+    {
+      errors.error "unsupported <target-os> " [ $(property-set).get <target-os> ] ;
+    }
+    property-set = [ $(property-set).add-raw <xsdk-os>$(xsdk-os) ] ;
+
+    local xsdk-instruction-set = [ instruction-set-to-xsdk [ $(property-set).get <instruction-set> ] ] ;
+    if ! $(xsdk-instruction-set)
+    {
+      errors.error "unsupported <instruction-set> " [ $(property-set).get <instruction-set> ] ;
+    }
+    property-set = [ $(property-set).add-raw <xsdk-instruction-set>$(xsdk-instruction-set) ] ;
+
+    local xsdk-processor-prefix = [ $(property-set).get <xsdk-processor-prefix> ] ;
+    if ! $(xsdk-processor-prefix)
+    {
+      xsdk-processor-prefix = [ instruction-set-to-prefix [ $(property-set).get <instruction-set> ] ] ;
+
+      property-set = [ $(property-set).add-raw <xsdk-processor-prefix>$(xsdk-processor-prefix) ] ;
+    }
+    local xsdk-processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
+
+    assert.variable-not-empty xsdk-processor-prefix ;
+    assert.variable-not-empty xsdk-processor-id ;
+
+    local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
+
+    local ps ;
+    local vts ;
+
+    if [ class.is-a $(r[1]) : property-set ]
+    {
+      ps = $(r[1]) ;
+      vts = $(r[2-]) ;
+    }
+    else
+    {
+      vts = $(r) ;
+    }
+
+    local ws-dir ;
+    for local vt in $(vts)
+    {
+      if [ $(vt).type ] = XSDKWS
+      {
+        local p = [ $(vt).path ] ;
+        local n = [ $(vt).name ] ;
+
+        ws-dir = $(p)/$(n) ;
+      }
+    }
+
+    assert.variable-not-empty ws-dir ;
+
+    # add properties from createhw
+
+    ps = [ $(ps).add-raw <include>$(ws-dir)/hw ] ;
+
+    local instruction-set = [ $(property-set).get <instruction-set> ] ;
+
+    # @todo this cannot work due to toolset and usage-requirement
+    # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
+    # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
+
+    # @todo these should be done in gcc.jam really
+    # @todo support specific instruction-sets better
+    # @todo figure out the tool chooses this or use the app and ask after it's built
+    switch $(instruction-set)
+    {
+      case cortex-a9 :
+          ps = [ $(ps).add-raw <cflags>-mcpu=$(instruction-set) ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
+          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
+          ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
+          ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
+          ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
+      case cortex-r5 :
+          ps = [ $(ps).add-raw <cflags>-mcpu=$(instruction-set) ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
+          if [ $(property-set).get <target-os> ] != freertos
+          {
+            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
+            ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
+            ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3-d16 ] ;
+          }
+    }
+
+    # add properties from createbsp
+
+### @todo workaround for linking issues
+###    for local vt in $(vts)
+###    {
+###      if [ type.is-derived [ $(vt).type ] LIB ]
+###      {
+###        local s = [ $(vt).search ] ;
+###
+###        ps = [ $(ps).add-raw <include>$(s:D)/include ] ;
+###      }
+###    }
+    local bsp-dir = $(ws-dir)/bsp/$(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) ;
+
+    ps = [ $(ps).add-raw <include>$(bsp-dir)/include ] ;
+
+    ps = [ $(ps).add-raw <library-path>$(bsp-dir)/lib ] ;
+
+    {
+      local bsp-libraries = xil ;
+      if [ $(property-set).get <target-os> ] = freertos
+      {
+        bsp-libraries += freertos ;
+      }
+      for local l in [ $(property-set).get <xsdk-library> ]
+      {
+        bsp-libraries += [ xsdk-library-to-library $(l) ] ;
+      }
+
+### @todo workaround for linking issues
+###      ps = [ $(ps).add-raw <include>$(s:D)/include ] ;
+      # @todo this should be done with the right requirements on the libraries
+      # all -> xil
+      # openamp -> metal
+      for local l in $(bsp-libraries)
+      {
+        local extra-libs ;
+        if $(l) != xil
+        {
+          extra-libs += xil ;
+        }
+        if $(l) = open_amp
+        {
+          extra-libs += metal ;
+        }
+        local library-group = $(extra-libs) $(l) gcc c ;
+        if [ $(property-set).get <xsdk-language> ] = c++
+        {
+          library-group += stdc++ ;
+        }
+        local linkflags = [ string.join -Wl --start-group -l$(library-group) --end-group : "," ] ;
+
+        ps = [ $(ps).add-raw <linkflags>$(linkflags) ] ;
+      }
+    }
+
+    # add properties from createapp
+
+    local defines = [ instruction-set-to-defines $(instruction-set) ] ;
+
+    ps = [ $(ps).add-raw <define>$(defines) ] ;
+
+    ps = [ $(ps).add-raw <linkflags>"-Wl,-T -Wl,$(ws-dir)/app/src/lscript.ld" ] ;
+
+    return $(ps) $(vts) ;
+  }
+
+  # Generate all the targets created by the XSDK.
+  rule generated-targets ( sources + : property-set : project name ? )
+  {
+    assert.equal [ sequence.length $(sources) ] : 1 ;
+
+    local virtual-targets ;
+
+    if ! $(name)
+    {
+      name = [ generator.determine-output-name $(sources[1]) ] ;
+    }
+
+    local shared ;
+    if [ $(property-set).get <link> ] = shared
+    {
+      shared = true ;
+    }
+
+    local xsdk-instruction-set = [ $(property-set).get <xsdk-instruction-set> ] ;
+    local xsdk-processor-prefix = [ $(property-set).get <xsdk-processor-prefix> ] ;
+    local xsdk-processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
+
+    assert.variable-not-empty xsdk-instruction-set ;
+    assert.variable-not-empty xsdk-processor-prefix ;
+    assert.variable-not-empty xsdk-processor-id ;
+
+    local xsct-target ;
+    {
+      local a = [ class.new action $(sources) : xsdk.generate-build : $(property-set) ] ;
+      local t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+
+      xsct-target = $(t) ;
+    }
+
+    local xsctrun-target ;
+    {
+      local a = [ class.new action $(xsct-target) : xsdk.generate-ws : $(property-set) ] ;
+      local t = [ class.new file-target $(name) : XSCTRUN : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+
+      xsctrun-target = $(t) ;
+    }
+
+    {
+      local a = [ class.new action $(xsctrun-target) $(sources) : xsdk.generate-run : $(property-set) ] ;
+      local t = [ class.new file-target run : TCL : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
+
+    {
+      local a = [ class.new action $(xsctrun-target) $(sources) : xsdk.generate-print : $(property-set) ] ;
+      local t = [ class.new file-target print : TCL : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
+
+    local a = [ class.new action $(xsctrun-target) : xsdk.ws-complete : $(property-set) ] ;
+
+    local xsdkws-target ;
+    {
+      local t = [ class.new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+
+      xsdkws-target = $(t) ;
+    }
+
+    # targets generated by createhw
+
+    local t ;
+
+    local build-dir = [ $(xsdkws-target).path ] ;
+    local ws = [ $(xsdkws-target).name ] ;
+
+    local bsp-dir = $(build-dir)/$(ws)/bsp/$(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) ;
+
+    assert.variable-not-empty bsp-dir ;
+
+    # @todo do not generate the HDF target since it might be circular
+    #t = [ class.new file-target $(ws)/hw/system : HDF : $(project) : $(a) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
+
+    t = [ class.new file-target $(ws)/hw/system : BIT : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init : TCL : $(project) : $(a)  ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+### @todo workaround to allow tighter control of linking
+###    t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init : H : $(project) : $(a)  ] ;
+###    virtual-targets += [ virtual-target.register $(t) ] ;
+###    t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init_gpl : H : $(project) : $(a)  ] ;
+###    virtual-targets += [ virtual-target.register $(t) ] ;
+    # @todo this should not be linked in except in very specific circumstances
+    # t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init : C : $(project) : $(a)  ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
+    # @todo this duplicates whats in $(xsdk-processor-prefix)_init for some reason, which one is the right one?
+    # t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init_gpl : C : $(project) : $(a)  ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
+
+    # targets generated by createbsp
+
+    t = [ class.new file-target $(ws)/bsp/system : MSS : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+### @todo workaround to allow tighter control of linking
+###    for local l in [ $(property-set).get <xsdk-library> ]
+###    {
+###      local translated-l = [ xsdk-library-to-library $(l) ] ;
+###
+###      t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+###      virtual-targets += [ virtual-target.register $(t) ] ;
+###    }
+###
+###    if [ $(property-set).get <target-os> ] = freertos
+###    {
+###      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+###      virtual-targets += [ virtual-target.register $(t) ] ;
+###    }
+###
+###    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+###    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    return $(virtual-targets) ;
+  }
+
+  # Return the name of the XSDK operating system indicated by the
+  # <target-os> represented by value.
+  rule target-os-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <target-os> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case elf : tmp = standalone ;
+      case freertos : tmp = freertos10_xilinx ;
+      case xilkernel : tmp = xilkernel ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  # Return the name of the XSDK processor, which is the same as an
+  # instruction set, indicated by the <instruction-set> represented by
+  # value.
+  rule instruction-set-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-a9 : tmp = cortexa9 ;
+      case cortex-a53 : tmp = cortexa53 ;
+      case cortex-r5 : tmp = cortexr5 ;
+      case microblaze : tmp = microblaze ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  # Return the prefix used in the path to the processor in the
+  # board-support package.
+  #
+  # @todo this is probably not actually right, but it is not clear
+  # where it comes from.
+  rule instruction-set-to-prefix ( value )
+  {
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-a9 : tmp = ps7 ;
+      case cortex-a53 : tmp = psu ;
+      case cortex-r5 : tmp = psu ;
+      case microblaze : tmp = psu ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  # Return the preprocessor definitions required by the
+  # <instruction-set> represented by value.
+  rule instruction-set-to-defines ( value )
+  {
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-r5 : tmp += ARMR5 ;
+    }
+
+    return $(tmp) ;
+  }
+
+  # Return the XSDK <toolset> as required by the <instruction-set>
+  # represented by value.
+  #
+  # @todo this should take into account the XSDK version.
+  rule instruction-set-to-toolset ( value )
+  {
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-r5 : tmp = gcc-xsdkarmr5 ;
+      case cortex-a9 : tmp = gcc-xsdkaarch32 ;
+      case cortex-a53 : tmp = gcc-xsdkaarch64 ;
+      case microblaze : tmp = gcc-xsdkmicroblaze ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  # Return the <library> as required by the <xsdk-library> represented
+  # by value.
+  #
+  # The <xsdk-library> names within the XSDK are not the same as the
+  # filenames produced by the XSDK.
+  rule xsdk-library-to-library ( value )
+  {
+    local tmp = $(value) ;
+    switch $(tmp)
+    {
+      case libmetal : tmp = metal ;
+      case openamp : tmp = open_amp ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+}
+
+# @todo loop and generate many generators for each supported configuration?
+###generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN H LIB BIT MSS TCL : <toolset>gcc <link>static ] ;
+generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN BIT MSS TCL : <toolset>gcc <link>static ] ;
+
+# Generate an XSCT script to build the XSDK Workspace.
+rule generate-build ( targets + : sources + : properties * )
+{
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
+
+  local target = $(targets[1]) ;
+  local source = $(sources[1]) ;
+  local ws-dir = [ on $(target) return $(LOCATE) ] ;
+  local ws-name = $(target:G=) ;
+  local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+
+  local hdf = $(source:G=) ;
+
+  local xsdk-os = [ feature.get-values <xsdk-os> : $(properties) ] ;
+  local xsdk-instruction-set = [ feature.get-values <xsdk-instruction-set> : $(properties) ] ;
+  local xsdk-processor-prefix = [ feature.get-values <xsdk-processor-prefix> : $(properties) ] ;
+  local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
+  local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
+  xsdk-template ?= "Empty Application" ;
+  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
+
+  assert.variable-not-empty xsdk-os ;
+  assert.variable-not-empty xsdk-instruction-set ;
+  assert.variable-not-empty xsdk-processor-prefix ;
+  assert.variable-not-empty xsdk-processor-id ;
+
+  local lines ;
+
+  lines += "# generated by xsdk.jam" ;
+
+  lines +=
+    "proc run-checked args {"
+    "    set ss [uplevel 1 $args]"
+    "    if {$ss != \"\"} then {"
+    "        return -code error \"error: $ss\""
+    "        exit 1"
+    "    }"
+    "}"
+    ;
+
+  # set the workspace
+  lines += "run-checked setws -switch $(ws)" ;
+
+  # create the hardware
+  lines += "run-checked createhw -name hw -hwspec $(hdf)" ;
+
+  # create and configure the bsp
+  # @todo print out all available options nicely
+  lines += "run-checked createbsp -name bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  for local l in [ feature.get-values <xsdk-library> : $(properties) ]
+  {
+    # @todo print out all available options nicely
+    # @todo check for errors
+    lines += "setlib -bsp bsp -lib $(l)" ;
+  }
+  # @todo print out all available options nicely
+  for local c in [ feature.get-values <xsdk-configuration> : $(properties) ]
+  {
+    # @todo check for errors
+    # @todo print out all available options nicely
+    lines += "configbsp -bsp bsp $(c)" ;
+  }
+
+  lines += "updatemss -mss $(ws)/bsp/system.mss" ;
+  lines += "regenbsp -bsp bsp" ;
+
+  # build the bsp
+  lines += "run-checked projects -build -type bsp -name bsp" ;
+
+  # create a dummy application for the linker file
+  local empty-template = "Empty Application" ;
+  local hello-template = "Hello World" ;
+  if [ feature.get-values <target-os> ] = freertos
+  {
+    hello-template = "FreeRTOS Hello World" ;
+  }
+
+  lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  lines += "run-checked projects -build -type app -name app" ;
+
+  lines += "run-checked createapp -name empty_c -app {$(empty-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  lines += "run-checked projects -build -type app -name empty_c" ;
+  lines += "run-checked createapp -name empty_cpp -app {$(empty-template)} -lang c++ -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  lines += "run-checked projects -build -type app -name empty_cpp" ;
+  lines += "run-checked createapp -name hello -app {$(hello-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  lines += "run-checked projects -build -type app -name hello" ;
+
+
+  print.output $(target) ;
+  print.text "#!/usr/bin/env xsct" : true ;
+  print.lines $(lines) ;
+  print.text "" ;
+}
+
+# Generate an XSCT script to print the current and available
+# configurations options of an XSDK Workspace.
+rule generate-print ( targets + : sources + : properties * )
+{
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 2 ;
+
+  local target = $(targets[1]) ;
+  local xsctrun-source = $(sources[1]) ;
+  local hdf-source = $(sources[2]) ;
+
+  local ws-dir = [ on $(target) return $(LOCATE) ] ;
+  local ws-name = $(xsctrun-source:G=) ;
+  local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
+
+  local fpga-name = $(hdf-source:B) ;
+
+  local lines ;
+
+  lines += "# generated by xsdk.jam" ;
+
+  lines +=
+    "proc run-checked args {"
+    "    set ss [uplevel 1 $args]"
+    "    if {$ss != \"\"} then {"
+    "        return -code error \"error: $ss\""
+    "        exit 1"
+    "    }"
+    "}"
+    ;
+
+  # set the workspace
+  lines += "run-checked setws -switch $(ws-absolute)" ;
+
+  # repo
+  # @todo do a regexp-based parse
+  lines +=
+    "# repo"
+    "### set applications [list]"
+    "### foreach line [lrange [split [repo -apps] \"\\n\"] 3 end] {"
+    "###     if {[scan $line \"%s%s\" name processor operating_system] != 3} then {"
+    "###         continue"
+    "###     }"
+    "###"
+    "###     lappend applications $name"
+    "### }"
+    "puts \"[repo -apps]\""
+
+    "set operating_systems [list]"
+    "foreach line [lrange [split [repo -os] \"\\n\"] 3 end] {"
+    "    if {[scan $line \"%s%s%s\" name version processor] != 3} then {"
+    "        continue"
+    "    }"
+
+    "    lappend operating_systems $name"
+    "}"
+    "puts \"operating_systems: $operating_systems\""
+
+    "set libraries [list]"
+    "foreach line [lrange [split [repo -libs] \"\\n\"] 3 end] {"
+    "    if {[scan $line \"%s%s\" name version] != 2} then {"
+    "        continue"
+    "    }"
+
+    "    lappend libraries $name"
+    "}"
+    "puts \"libraries: $libraries\""
+
+    "# @todo do a regexp-based parse"
+    "puts \"[repo -drivers]\""
+    ;
+
+  # apps
+  local apps = app empty_c empty_cpp hello ;
+
+  for app in $(apps)
+  {
+  lines +=
+      "# $(app)"
+      "puts \"$(app) application:\""
+      "puts \"assembler-flags : [configapp -app $(app) -info assembler-flags]\""
+      "puts \"build-config : [configapp -app $(app) -info build-config]\""
+      "puts \"compiler-misc : [configapp -app $(app) -info compiler-misc]\""
+      "puts \"compiler-optimization : [configapp -app $(app) -info compiler-optimization]\""
+      "puts \"define-compiler-symbols : [configapp -app $(app) -info define-compiler-symbols]\""
+      "puts \"include-path : [configapp -app $(app) -info include-path]\""
+      "puts \"libraries : [configapp -app $(app) -info libraries]\""
+      "puts \"library-search-path : [configapp -app $(app) -info library-search-path]\""
+      "puts \"linker-misc : [configapp -app $(app) -info linker-misc]\""
+      "puts \"linker-script : [configapp -app $(app) -info linker-script]\""
+      "puts \"undef-compiler-symbols : [configapp -app $(app) -info undef-compiler-symbols]\""
+
+      "puts \"assembler-flags : [configapp -app $(app) assembler-flags]\""
+      "puts \"build-config : [configapp -app $(app) build-config]\""
+      "puts \"compiler-misc : [configapp -app $(app) compiler-misc]\""
+      "puts \"compiler-optimization : [configapp -app $(app) compiler-optimization]\""
+      "puts \"define-compiler-symbols : [configapp -app $(app) define-compiler-symbols]\""
+      "puts \"include-path : [configapp -app $(app) include-path]\""
+      "puts \"libraries : [configapp -app $(app) libraries]\""
+      "puts \"library-search-path : [configapp -app $(app) library-search-path]\""
+      "puts \"linker-misc : [configapp -app $(app) linker-misc]\""
+      "puts \"linker-script : [configapp -app $(app) linker-script]\""
+      "puts \"undef-compiler-symbols : [configapp -app $(app) undef-compiler-symbols]\""
+      ;
+  }
+
+  # bsp
+  lines +=
+    "# bsp"
+    "puts \"[getos -bsp bsp]\""
+    "set os_parameters [list]"
+    "foreach line [lrange [split [configbsp -bsp bsp -os] \"\\n\"] 3 end] {"
+    "    if {[scan $line \"%s%s\" name value] != 2} then {"
+    "        continue"
+    "    }"
+
+    "    lappend os_parameters $name"
+    "}"
+    "puts \"os_parameters: $os_parameters\""
+    "set archiver [configbsp -bsp bsp archiver]"
+    "set processor_parameters [list]"
+    "foreach line [lrange [split [configbsp -bsp bsp -proc] \"\\n\"] 3 end] {"
+    "    if {[scan $line \"%s%s\" name value] != 2} then {"
+    "        continue"
+    "    }"
+    "    lappend processor_parameters $name"
+    "}"
+    "puts \"processor_parameters: $processor_parameters\""
+    "foreach p $processor_parameters {"
+    "    set value [configbsp -bsp bsp $p]"
+    "    puts \"$p: $value\""
+    "}"
+    "set libraries [list]"
+    "foreach line [lrange [split [getlibs -bsp bsp] \"\\n\"] 3 end] {"
+    "    if {[scan $line \"%s%s\" name version] != 2} then {"
+    "        continue"
+    "    }"
+
+    "    lappend libraries $name"
+    "}"
+    "foreach library $libraries {"
+    "    set parameters [list]"
+    "    foreach line [lrange [split [configbsp -bsp bsp -lib $library] \"\\n\"] 3 end] {"
+    "        if {[scan $line \"%s%s\" name value] != 2} then {"
+    "            continue"
+    "        }"
+
+    "        lappend parameters $name"
+    "    }"
+
+    "    puts \"library $library parameters: $parameters\""
+    "}"
+
+    "puts \"[getdrivers -bsp bsp]\""
+    ;
+
+  # hw
+  lines +=
+    "# hw"
+    "# @todo is there anything here"
+    ;
+
+  print.output $(target) ;
+  print.text "#!/usr/bin/env xsct" : true ;
+  print.lines $(lines) ;
+  print.text "" ;
+}
+
+# Generate an XSCT script to run a program built with the XSDK
+# Workspace.
+rule generate-run ( targets + : sources + : properties * )
+{
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 2 ;
+
+  local target = $(targets[1]) ;
+  local xsctrun-source = $(sources[1]) ;
+  local hdf-source = $(sources[2]) ;
+
+  local ws-dir = [ on $(target) return $(LOCATE) ] ;
+  local ws-name = $(xsctrun-source:G=) ;
+  local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
+
+  local fpga-name = $(hdf-source:B) ;
+
+  local lines ;
+
+  lines += "# generated by xsdk.jam" ;
+
+  lines += "set xsdkroot [file normalize $(.root)]" ;
+
+  # @todo check for errors
+
+  # set the workspace
+  lines +=
+    "if {$argc != 1} then {"
+    "    puts \"usage: $argv0 <program>\""
+    "    exit 1"
+    "}"
+    ;
+
+  lines +=
+    "set program [file normalize [lindex argv 0]"
+
+    "set ws [file normalize $(ws-absolute)]"
+
+    "set hdf [file normalize [file join $ws system.hdf]]"
+    "set bit [file normalize [file join $ws $(fpga-name:S=.bit)]]]"
+
+    "set jtag_cable_name \"*\""
+
+    "if {! [file exists $ws]} {"
+    "    puts \"error: workspace $ws does not exist\""
+    "    exit 1"
+    "}"
+    "setws -switch $ws"
+
+    "connect"
+
+    "source [file normalize [file join $xsdkroot scripts sdk util zynqmp_utils.tcl]]"
+
+    # @todo below is RPU-specific, generalize using properties
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "rst -system"
+    "after 3000"
+
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "reset_apu"
+
+    "targets -set -nocase -filter {name =~ \"RPU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "clear_rpu_reset"
+    "enable_split_mode"
+
+    "targets -set -filter {jtag_cable_name =~ $jtag_cable_name && level==0} -index 0"
+    "fpga -file $bit"
+
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "loadhw -hw $hdf -mem-ranges [list {  0x80000000   0xbfffffff} { 0x400000000  0x5ffffffff} {0x1000000000 0x7fffffffff}]"
+
+    "configparams force-mem-access 1"
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+
+    "source [file join $ws hw $(xsdk-processor-prefix)_init.tcl]"
+    "after 3000"
+    "$(xsdk-processor-prefix)_init"
+    "source [file normalize [file join $xsdkroot scripts sdk util fsbl.tcl]]"
+    "after 1000"
+    "$(xsdk-processor-prefix)_ps_pl_isolation_removal"
+    "after 1000"
+    "$(xsdk-processor-prefix)_ps_pl_reset_config"
+    "catch {$(xsdk-processor-prefix)_protection}"
+
+    "targets -set -nocase -filter {name =~ \"*R5*0\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "rst -processor"
+    "catch {XFsbl_TcmEccInit R5_0}"
+
+    "dow $program"
+
+    "bpadd -addr &main"
+
+    "configparams force-mem-access 0"
+
+    "con"
+  ;
+
+  print.output $(target) ;
+  print.text "#!/usr/bin/env xsct" : true ;
+  print.lines $(lines) ;
+  print.text "" ;
+}
+
+TOUCH = [ common.file-touch-command ] ;
+if [ os.name ] = NT
+{
+  RMDIR = rmdir /s /q ;
+}
+else
+{
+  RMDIR = rm -rf ;
+}
+
+# Coupled with the actions of the same name, runs the script to build
+# the XSDK Workspace.
+rule generate-ws ( targets + : sources + : properties * )
+{
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
+}
+
+actions generate-ws
+{
+  $(RMDIR) "$(<[1]:S=.xsdkws)" && "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
+}
+
+# Generates the targets contained in the XSDK Workspace.
+rule ws-complete ( targets + : sources + : properties * )
+{
+  # assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
 }

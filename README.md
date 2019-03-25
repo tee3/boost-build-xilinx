@@ -113,3 +113,63 @@ This project just checks the configuration of the `xsdk` module.
 ```shell
 cd test/configure && b2 --verbose-test -j 8
 ```
+
+### `zcu102-empty`
+
+This project is based on the "Empty Application" XSDK application
+template builds all valid `<target-os>` and `<instruction-set>`.
+
+Any compatible Boost.Build features can also be specified on the
+command line.
+
+```shell
+cd test/zcu102-empty && b2 --verbose-test -j 8
+```
+
+```shell
+cd test/zcu102-empty && b2 --verbose-test -j 8 variant=release target-os=freertos instruction-set=cortex-a53
+```
+
+### `zcu102-hello`
+
+This project is based on either the "Hello World" application template
+or the "FreeRTOS Hello World" XSDK application template for
+`<target-os>freertos` and builds all valid combinations of
+`<target-os>` and `<instruction-set>`.
+
+Any compatible Boost.Build features can also be specified on the
+command line.
+
+```shell
+cd test/zcu102-empty && b2 --verbose-test -j 8
+```
+
+```shell
+cd test/zcu102-empty && b2 --verbose-test -j 8 variant=release instruction-set=cortex-a53
+```
+
+### `zcu102-rpc-demo`
+
+This project is based on the "OpenAMP RPC Demo" XSDK application
+template for `<target-os>freertos` and `<instruction-set>cortex-r5`.
+The source file containing the main program has been split and that is
+used to create a C++ version of the main program as well.
+
+Note any compatible Boost.Build features can also be specified on the
+command line.
+
+```shell
+cd test/zcu102-rpc-demo && b2 --verbose-test -j 8
+```
+
+```shell
+cd test/zcu102-rpc-demo && b2 --verbose-test -j 8 variant=release
+```
+
+## Reference
+
+See the [module](xsdk.jam) for the user manual and reference
+documentation.
+
+The documentation is in AsciiDoc format in a form that can be used by
+the Boost.Build project documentation.
