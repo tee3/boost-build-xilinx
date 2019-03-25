@@ -1,1 +1,2 @@
 build-project configure ;
+build-project hw-generator ;

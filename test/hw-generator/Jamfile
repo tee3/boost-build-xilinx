@@ -1,0 +1,8 @@
+import ../../xsdk ;
+
+exe example
+  : # sources
+    ../example.cpp
+
+    ../example.hdf
+  ;

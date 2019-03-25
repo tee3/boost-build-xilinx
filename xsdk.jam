@@ -3,8 +3,13 @@
 import errors ;
 
 import toolset ;
+import project ;
 import feature ;
+import targets ;
+import type ;
+import "class" : new ;
 import common ;
+import generators ;
 
 import os ;
 
@@ -17,6 +22,11 @@ feature.extend target-os :
   freertos
   xilsystem
   ;
+
+type.register XSDKHW ;
+type.register HDF : hdf ;
+type.register BIT : bit ;
+type.register TCL : tcl ;
 
 rule init ( version ? : command * : options * )
 {
@@ -71,4 +81,100 @@ rule init ( version ? : command * : options * )
   {
     ECHO "xsdk: warning: unsupported operating system" os.name ;
   }
+}
+
+class hw-generator : generator
+{
+  rule __init__ ( * : * )
+  {
+    generator.__init__ $(1) : $(2) : $(3) : $(4) : $(5) : $(6) : $(7) : $(8) : $(9) ;
+  }
+
+  rule run ( project name ? : property-set : sources * )
+  {
+    # @todo need to generate the XSDKHW type
+    echo hw-generator-run --------------------- ;
+    echo $(project) ;
+    echo --------------------- ;
+    echo $(name) ;
+    echo --------------------- ;
+    echo $(property-set) ;
+    echo [ $(property-set).raw ] ;
+    echo --------------------- ;
+    echo $(sources) ;
+    for local s in $(sources)
+    {
+      echo [ $(s).name ] ;
+    }
+    echo --------------------- ;
+
+    local source = $(sources[0]) ;
+
+    if ! $(name)
+    {
+      local tmp = [ generator.determine-output-name $(source) ] ;
+
+      name = $(tmp)hw ;
+    }
+
+    echo "name = $(name)" ;
+
+    local a = [ new action $(source) : xsdk.createhw : $(property-set) ] ;
+
+    local build-dir = [ $(project).build-dir ] ;
+
+    local virtual-targets ;
+    local t ;
+
+    t = [ new file-target $(name) : XSDKHW : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    # @todo do not generate the HDF target since it might be circular
+    #t = [ new file-target system : HDF : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target system : BIT : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target psu_init : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target psu_init : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target psu_init : TCL : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target psu_init_gpl : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ new file-target psu_init_gpl : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    return $(property-set) $(virtual-targets) ;
+  }
+}
+
+# @todo do not generate the HDF target since it might be circular
+#generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW HDF BIT H C TCL ] ;
+generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT H C TCL ] ;
+
+# @todo workspace directory based on requirements
+# @todo ask for workspace to be removed prior to building
+actions createhw
+{
+  echo -------------------
+  pwd
+  echo -------------------
+  echo $(>)
+  echo -------------------
+  echo $(<)
+  echo -------------------
+  echo "setws $(<[1]:D)" > .tmp.tcl
+  echo "createhw -name $(<[1]:B) -hwspec $(>)" >> .tmp.tcl
+  echo running the following script -------------------
+  cat .tmp.tcl
+  # $(.bin)/xsct .tmp.tcl
+  echo -------------------
+  echo "# generated system.hdf" > $(<[2]:S=.hdf)
+  echo "# generated system.bit" > $(<[2])
+  echo "void psu_init ();" > $(<[3])
+  echo "void psu_init () {};" > $(<[4])
+  echo "proc psu_init {} {};" > $(<[5])
+  echo "void psu_init_gpl ();" > $(<[6])
+  echo "void psu_init_gpl () {};" > $(<[7])
 }
