@@ -1,0 +1,14 @@
+import ../../xsdk ;
+
+xsdkws tmpws
+  : # sources
+    # /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
+    ../example.hdf
+  ;
+
+exe example
+  : # sources
+    ../example.cpp
+
+    tmpws
+  ;
