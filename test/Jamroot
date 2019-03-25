@@ -1,2 +1,3 @@
 build-project configure ;
 build-project hw-generator ;
+build-project hw-generator-rule ;
