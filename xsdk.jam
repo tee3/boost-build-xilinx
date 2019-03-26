@@ -148,16 +148,16 @@ class hw-generator : generator
     #virtual-targets += [ virtual-target.register $(t) ] ;
     t = [ new file-target system : BIT : $(project) : $(a) : $(build-dir)/$(name) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ new file-target psu_init : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ new file-target psu_init : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
+    # t = [ new file-target psu_init : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
+    # t = [ new file-target psu_init : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
     t = [ new file-target psu_init : TCL : $(project) : $(a) : $(build-dir)/$(name) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ new file-target psu_init_gpl : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ new file-target psu_init_gpl : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
+    # t = [ new file-target psu_init_gpl : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
+    # t = [ new file-target psu_init_gpl : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
 
     return $(property-set) $(virtual-targets) ;
   }
@@ -235,7 +235,7 @@ class bsp-generator : generator
 
 # @todo do not generate the HDF target since it might be circular
 #generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW HDF BIT H C TCL ] ;
-generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT H C TCL ] ;
+generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT TCL ] ;
 # @todo could also call out the source files?
 generators.register [ new bsp-generator xsdk.createbsp : XSDKHW : XSDKBSP MSS STATIC_LIB ] ;
 
