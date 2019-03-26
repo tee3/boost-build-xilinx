@@ -260,9 +260,9 @@ actions createhw
   cat $(<[1]:D)/$(<[1]:D=).tcl
   # $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
   echo -------------------
-  echo "# generated hdf" > $(<[2]:D)/$(>:D=)
-  echo "# generated bit" > $(<[2])
-  echo "proc psu_init {} {};" > $(<[3])
+  # echo "# generated hdf" > $(<[2]:D)/$(>:D=)
+  # echo "# generated bit" > $(<[2])
+  # echo "proc psu_init {} {};" > $(<[3])
   # echo "void psu_init ();" > $(<[4])
   # echo "void psu_init () {};" > $(<[5])
   # echo "void psu_init_gpl ();" > $(<[6])
@@ -329,7 +329,7 @@ actions createbsp
   cat $(<[1]:D)/$(<[1]:D=).tcl
   # $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
   echo -------------------
-  echo "# system.mss" > $(<[2])
-  mkdir -p $(<[1])/include
-  mkdir -p $(<[1])/lib
+  # echo "# system.mss" > $(<[2])
+  # mkdir -p $(<[1])/include
+  # mkdir -p $(<[1])/lib
 }
