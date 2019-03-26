@@ -323,6 +323,7 @@ actions createbsp
   done
   echo "updatemss -mss $(<[1])/system.mss" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "regenbsp -bsp $(<[1]:D=)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  echo "projects -build -type bsp -name $(<[1]:D=)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo running the following script -------------------
   cat $(<[1]:D)/$(<[1]:D=).tcl
   $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
