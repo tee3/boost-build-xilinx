@@ -246,23 +246,23 @@ actions createhw
   echo -------------------
   pwd
   echo -------------------
-  echo $(>)
+  # $(>)
   echo -------------------
-  echo $(<)
+  # $(<)
   echo -------------------
   echo "setws $(<[1]:D)" > .tmp.tcl
-  echo "createhw -name $(<[1]:B) -hwspec $(>)" >> .tmp.tcl
+  echo "createhw -name $(<[1]:D=) -hwspec $(>)" >> .tmp.tcl
   echo running the following script -------------------
   cat .tmp.tcl
-  # $(.bin)/xsct .tmp.tcl
+  $(.bin)/xsct .tmp.tcl
   echo -------------------
-  echo "# generated system.hdf" > $(<[2]:S=.hdf)
-  echo "# generated system.bit" > $(<[2])
-  echo "void psu_init ();" > $(<[3])
-  echo "void psu_init () {};" > $(<[4])
-  echo "proc psu_init {} {};" > $(<[5])
-  echo "void psu_init_gpl ();" > $(<[6])
-  echo "void psu_init_gpl () {};" > $(<[7])
+  # echo "# generated hdf > $(<[2]:S=.hdf)
+  # echo "# generated bit" > $(<[2])
+  # echo "void psu_init ();" > $(<[3])
+  # echo "void psu_init () {};" > $(<[4])
+  # echo "proc psu_init {} {};" > $(<[5])
+  # echo "void psu_init_gpl ();" > $(<[6])
+  # echo "void psu_init_gpl () {};" > $(<[7])
 }
 
 toolset.flags xsdk.createbsp XSDK_PROC <instruction-set>armv8 : psu_cortexa53_0 ;
@@ -283,28 +283,25 @@ actions createbsp
   echo -------------------
   pwd
   echo -------------------
-  echo $(>)
+  # $(>)
   echo -------------------
-  echo $(<)
+  # $(<)
   echo -------------------
-  echo "$(XSDK_CONFIGURATIONS)"
+  # $(XSDK_CONFIGURATIONS)
   echo -------------------
   echo "setws $(>:D)" > .tmp.tcl
-  # @todo how do i get the hardware name from sources or something?  the source should be the hardware name or something
-  echo "loadhw -name $(>:B)" >> .tmp.tcl
-  echo "createbsp -name $(<[1]:B) -proc $(XSDK_PROC) -hwproject hw -os $(XSDK_OS)" >> .tmp.tcl
+  echo "createbsp -name $(<[1]:D=) -proc $(XSDK_PROC) -hwproject $(>:D=) -os $(XSDK_OS)" >> .tmp.tcl
   # @todo figure out how to expand this right
   #echo "configbsp -bsp bsp $(XSDK_CONFIGURATIONS)" >> .tmp.tcl
   # @todo add a version number?
   #echo "setlib -bsp bsp -lib $(XSDK_LIBRARIES)" >> .tmp.tcl
   echo "updatemss -mss $(<[1])/system.mss" >> .tmp.tcl
-  echo "regenbsp -bsp $(<[1]:B)" >> .tmp.tcl
-  echo -------------------
+  echo "regenbsp -bsp $(<[1]:D=)" >> .tmp.tcl
+  echo running the following script -------------------
   cat .tmp.tcl
-  echo -------------------
   $(.bin)/xsct .tmp.tcl
   echo -------------------
-  echo "# system.mss" > $(<[2])
-  mkdir -p $(<[2]:D)/include
-  mkdir -p $(<[2]:D)/lib
+  # echo "# system.mss" > $(<[2])
+  # mkdir -p $(<[2]:D)/include
+  # mkdir -p $(<[2]:D)/lib
 }
