@@ -146,18 +146,21 @@ class hw-generator : generator
     # @todo do not generate the HDF target since it might be circular
     #t = [ new file-target system : HDF : $(project) : $(a) : $(build-dir)/$(name) ] ;
     #virtual-targets += [ virtual-target.register $(t) ] ;
+
     t = [ new file-target system : BIT : $(project) : $(a) : $(build-dir)/$(name) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-    # t = [ new file-target psu_init : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    # virtual-targets += [ virtual-target.register $(t) ] ;
-    # t = [ new file-target psu_init : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    # virtual-targets += [ virtual-target.register $(t) ] ;
+
     t = [ new file-target psu_init : TCL : $(project) : $(a) : $(build-dir)/$(name) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-    # t = [ new file-target psu_init_gpl : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    # virtual-targets += [ virtual-target.register $(t) ] ;
-    # t = [ new file-target psu_init_gpl : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
-    # virtual-targets += [ virtual-target.register $(t) ] ;
+
+    #t = [ new file-target psu_init : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
+    #t = [ new file-target psu_init : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
+    #t = [ new file-target psu_init_gpl : H : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
+    #t = [ new file-target psu_init_gpl : C : $(project) : $(a) : $(build-dir)/$(name) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
 
     return $(property-set) $(virtual-targets) ;
   }
@@ -256,11 +259,11 @@ actions createhw
   cat .tmp.tcl
   $(.bin)/xsct .tmp.tcl
   echo -------------------
-  # echo "# generated hdf > $(<[2]:S=.hdf)
+  # echo "# generated hdf > $(<[2]:D)/$(>:D=)
   # echo "# generated bit" > $(<[2])
-  # echo "void psu_init ();" > $(<[3])
-  # echo "void psu_init () {};" > $(<[4])
-  # echo "proc psu_init {} {};" > $(<[5])
+  # echo "proc psu_init {} {};" > $(<[3])
+  # echo "void psu_init ();" > $(<[4])
+  # echo "void psu_init () {};" > $(<[5])
   # echo "void psu_init_gpl ();" > $(<[6])
   # echo "void psu_init_gpl () {};" > $(<[7])
 }
@@ -292,9 +295,9 @@ actions createbsp
   echo "setws $(>:D)" > .tmp.tcl
   echo "createbsp -name $(<[1]:D=) -proc $(XSDK_PROC) -hwproject $(>:D=) -os $(XSDK_OS)" >> .tmp.tcl
   # @todo figure out how to expand this right
-  #echo "configbsp -bsp bsp $(XSDK_CONFIGURATIONS)" >> .tmp.tcl
+  #echo "configbsp -bsp $(<[1]:D=) $(XSDK_CONFIGURATIONS)" >> .tmp.tcl
   # @todo add a version number?
-  #echo "setlib -bsp bsp -lib $(XSDK_LIBRARIES)" >> .tmp.tcl
+  #echo "setlib -bsp $(<[1]:D=) -lib $(XSDK_LIBRARIES)" >> .tmp.tcl
   echo "updatemss -mss $(<[1])/system.mss" >> .tmp.tcl
   echo "regenbsp -bsp $(<[1]:D=)" >> .tmp.tcl
   echo running the following script -------------------
