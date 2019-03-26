@@ -258,7 +258,7 @@ actions createhw
   echo "createhw -name $(<[1]:D=) -hwspec $(>)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo running the following script -------------------
   cat $(<[1]:D)/$(<[1]:D=).tcl
-  # $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
+  $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
   echo -------------------
   # echo "# generated hdf" > $(<[2]:D)/$(>:D=)
   # echo "# generated bit" > $(<[2])
@@ -313,21 +313,19 @@ actions createbsp
   echo "createbsp -name $(<[1]:D=) -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject $(>:D=) -os $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
   # @todo not portable
   # @todo figure out how to expand this right
-  for c in "$(XSDK_CONFIGURATIONS)"
-  {
-    echo "configbsp -bsp $(<[1]:D=) ${c}" >> $(<[1]:D)/$(<[1]:D=).tcl
-  }
+  for l in $(XSDK_LIBRARIES) ; do
+    echo "setlib -bsp $(<[1]:D=) -lib ${l}" >> $(<[1]:D)/$(<[1]:D=).tcl
+  done
   # @todo not portable
   # @todo figure out how to expand this right
-  for l in $(XSDK_LIBRARIES)
-  {
-    echo "setlib -bsp $(<[1]:D=) -lib ${l}" >> $(<[1]:D)/$(<[1]:D=).tcl
-  }
+  for c in "$(XSDK_CONFIGURATIONS)" ; do
+    echo "configbsp -bsp $(<[1]:D=) ${c}" >> $(<[1]:D)/$(<[1]:D=).tcl
+  done
   echo "updatemss -mss $(<[1])/system.mss" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "regenbsp -bsp $(<[1]:D=)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo running the following script -------------------
   cat $(<[1]:D)/$(<[1]:D=).tcl
-  # $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
+  $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
   echo -------------------
   # echo "# system.mss" > $(<[2])
   # mkdir -p $(<[1])/include
