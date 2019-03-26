@@ -1,5 +1,7 @@
 # Boost.Build support for the Xilinx SDK (XSDK).
 
+# @todo need to generate an app to get the linker script
+
 import errors ;
 
 import toolset ;
@@ -30,6 +32,8 @@ feature.extend instruction-set :
 feature.feature xsdk-library : : free ;
 feature.feature xsdk-configuration : : free ;
 feature.feature xsdk-processor-id : 0 1 2 3 ;
+
+type.register XSDKAPP ;
 
 type.register XSDKBSP ;
 type.register MSS : mss ;
@@ -256,11 +260,64 @@ class bsp-generator : generator
   }
 }
 
+class app-generator : generator
+{
+  rule __init__ ( * : * )
+  {
+    generator.__init__ $(1) : $(2) : $(3) : $(4) : $(5) : $(6) : $(7) : $(8) : $(9) ;
+  }
+
+  rule run ( project name ? : property-set : sources * )
+  {
+    # @todo need to generate the XSDKBSP type
+    echo app-generator run --------------------- ;
+    echo $(project) ;
+    echo --------------------- ;
+    echo $(name) ;
+    echo --------------------- ;
+    echo $(property-set) ;
+    echo [ $(property-set).raw ] ;
+    echo --------------------- ;
+    echo $(sources) ;
+    for local s in $(sources)
+    {
+      echo [ $(s).name ] ;
+    }
+    echo --------------------- ;
+
+    local source = $(sources[0]) ;
+
+    if ! $(name)
+    {
+      local tmp = [ generator.determine-output-name $(source) ] ;
+
+      name = $(tmp)hw ;
+    }
+
+    echo "name = $(name)" ;
+
+    local a = [ new action $(source) : xsdk.createapp : $(property-set) ] ;
+
+    local build-dir = [ $(project).build-dir ] ;
+
+    local virtual-targets ;
+    local t ;
+
+    t = [ new file-target $(name) : XSDKAPP : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    property-set = [ $(property-set).add-raw <linkflags>"-T $(build-dir)/$(name)/src/lscript.ld" ] ;
+
+    return $(property-set) $(virtual-targets) ;
+  }
+}
+
 # @todo do not generate the HDF target since it might be circular
 #generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW HDF BIT H C TCL ] ;
 generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT TCL ] ;
 # @todo could also call out the source files?
 generators.register [ new bsp-generator xsdk.createbsp : XSDKHW : XSDKBSP MSS LIB ] ;
+generators.register [ new app-generator xsdk.createapp : XSDKBSP : XSDKAPP ] ;
 
 # @todo workspace directory based on requirements
 # @todo ask for workspace to be removed prior to building
@@ -343,6 +400,45 @@ actions createbsp
   echo "updatemss -mss $(<[1])/system.mss" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "regenbsp -bsp $(<[1]:D=)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "projects -build -type bsp -name $(<[1]:D=)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  echo running the following script -------------------
+  cat $(<[1]:D)/$(<[1]:D=).tcl
+  $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
+  echo -------------------
+  # echo "# system.mss" > $(<[2])
+  # mkdir -p $(<[1])/include
+  # mkdir -p $(<[1])/lib
+}
+
+toolset.flags xsdk.createapp XSDK_OS <target-os>elf : standalone ;
+toolset.flags xsdk.createapp XSDK_OS <target-os>freertos : freertos10_xilinx ;
+toolset.flags xsdk.createapp XSDK_OS <target-os>xilsystem : xilsystem ;
+
+toolset.flags xsdk.createapp XSDK_PROC <instruction-set>armv8 : cortexa53 ;
+toolset.flags xsdk.createapp XSDK_PROC <instruction-set>armv7 : cortexr5 ;
+
+toolset.flags xsdk.createapp XSDK_PROC_ID <xsdk-processor-id>0 : 0 ;
+toolset.flags xsdk.createapp XSDK_PROC_ID <xsdk-processor-id>1 : 1 ;
+toolset.flags xsdk.createapp XSDK_PROC_ID <xsdk-processor-id>2 : 2 ;
+toolset.flags xsdk.createapp XSDK_PROC_ID <xsdk-processor-id>3 : 3 ;
+
+actions createapp
+{
+  echo -------------------
+  pwd
+  echo -------------------
+  # $(>)
+  echo -------------------
+  # $(<)
+  echo -------------------
+  # $(XSDK_LIBRARIES)
+  # $(XSDK_CONFIGURATIONS)
+  # $(XSDK_OS)
+  # $(XSDK_PROC)
+  # $(XSDK_PROC_ID)
+  # $(XSDK_LINK)
+  echo -------------------
+  echo "setws $(>:D)" > $(<[1]:D)/$(<[1]:D=).tcl
+  echo "createapp -name $(<[1]:D=) -lang c++ -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject $(>:D=) -os $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo running the following script -------------------
   cat $(<[1]:D)/$(<[1]:D=).tcl
   $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl
