@@ -240,7 +240,7 @@ class bsp-generator : generator
 #generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW HDF BIT H C TCL ] ;
 generators.register [ new hw-generator xsdk.createhw : HDF : XSDKHW BIT TCL ] ;
 # @todo could also call out the source files?
-generators.register [ new bsp-generator xsdk.createbsp : XSDKHW : XSDKBSP MSS STATIC_LIB ] ;
+generators.register [ new bsp-generator xsdk.createbsp : XSDKHW : XSDKBSP MSS LIB ] ;
 
 # @todo workspace directory based on requirements
 # @todo ask for workspace to be removed prior to building
