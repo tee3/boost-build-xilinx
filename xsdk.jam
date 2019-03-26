@@ -217,21 +217,40 @@ class bsp-generator : generator
     t = [ new file-target system : MSS : $(project) : $(a) : $(build-dir)/$(name) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
+    local properties = [ $(property-set).raw ] ;
+
     local shared ;
-    if <link>shared in [ $(property-set).raw ]
+    if <link>shared in $(properties)
     {
       shared = true ;
     }
 
-    t = [ new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(name)/lib : $(a) ] ;
+    local processor ;
+    if <instruction-set>armv7 in $(properties)
+    {
+      processor = cortexr5 ;
+    }
+    else if <instruction-set>armv8 in $(properties)
+    {
+      processor = cortexa53 ;
+    }
+
+    local processor-id = 0 ;
+    if <xsdk-processor-id>0 in $(properties)
+    {
+      processor-id = 0 ;
+    }
+    # @todo more
+
+    t = [ new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(name)/psu_$(processor)_$(processor-id)/lib : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
     for local l in [ $(property-set).get <xsdk-library> ]
     {
-      t = [ new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(name)/lib : $(a) ] ;
+      t = [ new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(name)/psu_$processor)_$(processor-id)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
-    property-set = [ $(property-set).add-raw <include>$(build-dir)/$(name)/include ] ;
+    property-set = [ $(property-set).add-raw <include>$(build-dir)/$(name)/psu_$(processor)_$(processor-id)/include ] ;
 
     return $(property-set) $(virtual-targets) ;
   }
