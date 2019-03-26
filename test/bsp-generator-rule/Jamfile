@@ -2,7 +2,7 @@ import ../../xsdk ;
 
 xsdkhw ahw
   : # sources
-    ../example.hdf
+    /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
   ;
 
 xsdkbsp absp
