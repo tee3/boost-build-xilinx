@@ -15,12 +15,17 @@ xsdkbsp absp
     <instruction-set>armv7
 
     # @todo just use <library>
+    <xsdk-configuration>"-lib xil a b"
+
     <xsdk-library>xilffs
+    <xsdk-configuration>"-lib xilffs c d"
+
     <xsdk-library>xilrsa
+    <xsdk-configuration>"-lib xilrsa e f"
 
     # @todo do more configuration to check everything
     <xsdk-configuration>"sleep_timer psu_ttc_3"
-    <xsdk-configuration>"-lib xil a b"
+    <xsdk-configuration>"XXX YYY"
   : # default-build
   : # usage-requirements
   ;
