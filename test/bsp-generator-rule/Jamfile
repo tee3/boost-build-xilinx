@@ -15,7 +15,7 @@ xsdkws ws
     #<xsdk-configuration>"-lib xilrsa e f"
 
     # @todo do more configuration to check everything
-    <xsdk-configuration>"sleep_timer psu_ttc_3"
+    #<xsdk-configuration>"sleep_timer psu_ttc_3"
     #<xsdk-configuration>"XXX YYY"
   : # default-build
   : # usage-requirements
