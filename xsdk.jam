@@ -109,9 +109,9 @@ rule init ( version ? : command * : options * )
 
 class ws-generator : generator
 {
-  rule __init__ ( id : source-types + : target-types + : requirements * )
+  rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
   {
-    generator.__init__ $(id) : $(source-types) : $(target-types) : $(requirements) ;
+    generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
   }
 
   rule run ( project name ? : property-set : sources * )
