@@ -351,17 +351,4 @@ actions ws-generator
   $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl > $(<[1]:D)/$(<[1]:D=).log
   cat $(<[1]:D)/$(<[1]:D=).log
   echo -------------------
-  # echo "# generated hdf" > $(<[2]:D)/$(>:D=)
-  # echo "# generated bit" > $(<[2])
-  # echo "proc psu_init {} {};" > $(<[3])
-  # echo "void psu_init ();" > $(<[4])
-  # echo "void psu_init () {};" > $(<[5])
-  # echo "void psu_init_gpl ();" > $(<[6])
-  # echo "void psu_init_gpl () {};" > $(<[7])
-
-  # echo "# system.mss" > $(<[2])
-  # mkdir -p $(<[1])/bsp/psu_$(XSDK_PROC)_$(XSDK_PROC_ID)/include
-  # mkdir -p $(<[1])/bsp/psu_$(XSDK_PROC)_$(XSDK_PROC_ID)/lib
-
-  # echo "#lscript.ld" > $(<[1])/app/src/lscript.ld
 }
