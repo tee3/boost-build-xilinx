@@ -146,11 +146,11 @@ class ws-generator : generator
     t = [ new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    t = [ new file-target $(name) : XSCT : $(project) : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-
     local build-dir = [ $(t).path ] ;
     local xsdkws-name = [ $(t).name ] ;
+
+    t = [ new file-target $(name) : XSCT : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
 
     local ws-dir = $(build-dir)/$(xsdkws-name) ;
 
