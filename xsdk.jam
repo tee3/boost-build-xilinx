@@ -25,7 +25,8 @@ feature.extend instruction-set :
   armv8
   ;
 
-feature.feature xsdk-template : : optional free link-incompatible ;
+# @todo fix this
+#feature.feature xsdk-template : : optional free link-incompatible ;
 feature.feature xsdk-library : : optional free ;
 feature.feature xsdk-configuration : : optional free link-incompatible ;
 feature.feature xsdk-language : c c++ : propagated link-incompatible ;
@@ -107,14 +108,16 @@ generators.register-standard xsdk.ws-generator
     HDF
   :
     XSDKWS(%)
+    XSCT(%)
 
-    BIT(%/hw/system)
-    TCL(%/hw/psu_init)
+    BIT(%.xsdkws/hw/system)
+    TCL(%.xsdkws/hw/psu_init)
 
-    MSS(%/bsp/system)
+    MSS(%.xsdkws/bsp/system)
   ;
 
-toolset.flags xsdk.ws-generator XSDK_TEMPLATE <xsdk-template> ;
+# @todo fix this
+#toolset.flags xsdk.ws-generator XSDK_TEMPLATE <xsdk-template> ;
 
 toolset.flags xsdk.ws-generator XSDK_LIBRARIES <xsdk-library> ;
 
@@ -147,6 +150,8 @@ rule ws-generator ( targets + : sources + : properties * )
   echo ---------------- ;
   echo $(properties) ;
   echo ---------------- ;
+
+  echo "TARGET LOCATION " [ on $(targets[1]) return $(LOCATION) ] ;
 
   local lines =
     "#!/usr/bin/env xsct"
@@ -184,44 +189,33 @@ actions ws-generator
   # $(XSDK_PROC_ID)
   # $(XSDK_LINK)
   echo -------------------
-  echo "setws $(<[1])" > $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createhw -name hw -hwspec $(>)" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createbsp -name bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  echo "setws $(<[1])" > $(<[1]:S=.tcl)
+  echo "" $(<[1]:S=.tcl)
+  echo "createhw -name hw -hwspec $(>)" >> $(<[1]:S=.tcl)
+  echo "" $(<[1]:S=.tcl)
+  echo "createbsp -name bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:S=.tcl)
   # @todo not portable
   # @todo figure out how to expand this right
   for l in $(XSDK_LIBRARIES) ; do
-    echo "setlib -bsp bsp -lib ${l}" >> $(<[1]:D)/$(<[1]:D=).tcl
+    echo "setlib -bsp bsp -lib ${l}" >> $(<[1]:S=.tcl)
   done
   # @todo not portable
   # @todo figure out how to expand this right
   for c in "$(XSDK_CONFIGURATIONS)" ; do
-    echo "configbsp -bsp bsp ${c}" >> $(<[1]:D)/$(<[1]:D=).tcl
+    echo "configbsp -bsp bsp ${c}" >> $(<[1]:S=.tcl)
   done
-  echo "updatemss -mss $(<[1])/bsp/system.mss" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "regenbsp -bsp bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "projects -build -type bsp -name bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
+  echo "updatemss -mss $(<[1])/bsp/system.mss" >> $(<[1]:S=.tcl)
+  echo "regenbsp -bsp bsp" >> $(<[1]:S=.tcl)
+  echo "projects -build -type bsp -name bsp" >> $(<[1]:S=.tcl)
+  echo "" $(<[1]:S=.tcl)
+  # @todo fix this
+  #echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:S=.tcl)
+  echo "createapp -name app -app {} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:S=.tcl)
+  echo "" $(<[1]:S=.tcl)
   # @todo print out all available options
   echo running the following script -------------------
-  cat $(<[1]:D)/$(<[1]:D=).tcl
-  $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl > $(<[1]:D)/$(<[1]:D=).log
-  cat $(<[1]:D)/$(<[1]:D=).log
+  cat $(<[1]:S=.tcl)
+  $(.bin)/xsct $(<[1]:S=.tcl) > $(<[1]:S=.log)
+  cat $(<[1]:S=.log)
   echo -------------------
-  # echo "# generated hdf" > $(<[2]:D)/$(>:D=)
-  # echo "# generated bit" > $(<[2])
-  # echo "proc psu_init {} {};" > $(<[3])
-  # echo "void psu_init ();" > $(<[4])
-  # echo "void psu_init () {};" > $(<[5])
-  # echo "void psu_init_gpl ();" > $(<[6])
-  # echo "void psu_init_gpl () {};" > $(<[7])
-
-  # echo "# system.mss" > $(<[2])
-  # mkdir -p $(<[1])/bsp/psu_$(XSDK_PROC)_$(XSDK_PROC_ID)/include
-  # mkdir -p $(<[1])/bsp/psu_$(XSDK_PROC)_$(XSDK_PROC_ID)/lib
-
-  # echo "#lscript.ld" > $(<[1])/app/src/lscript.ld
 }
