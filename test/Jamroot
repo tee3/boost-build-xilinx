@@ -1,12 +1,9 @@
 # @todo ensure xsdk fails if not support properties
 project
   : default-build
-    <toolset>gcc-arm7
-
     <target-os>elf
 
-    <architecture>arm
-    <instruction-set>armv7
+    <processor>cortexr5
 
     <link>static
   ;

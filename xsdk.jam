@@ -30,6 +30,17 @@ feature.extend instruction-set :
   armv8
   ;
 
+# @todo this should be part of boost.build
+# @todo this depends on what the hdf supports too
+feature.feature processor
+  : # values
+    cortexa9
+    cortexa53
+    cortexr5
+  : # attributes
+    propagated optional
+  ;
+
 feature.feature xsdk-template : "" : link-incompatible ;
 feature.set-default xsdk-template : "" ;
 feature.feature xsdk-library : : optional free ;
@@ -96,11 +107,7 @@ rule init ( version ? : command * : options * )
       ECHO "xsdk: using xsdk" $(version) "at" $(root) ;
     }
 
-    toolset.flags xsdk .bin $(condition) : $(root)/bin ;
-
-    # @todo this is where the compilers are on Linxu
-    #using gcc : armr5 : $(root)/gnu/armr5/lin/gcc-arm-non-eabi/bin/g++ ;
-    #using gcc : aarch64 : $(root)/gnu/aarch64/lin/gcc-arm-non-eabi/bin/g++ ;
+    toolset.flags xsdk .xsct $(condition) : $(root)/bin/xsct ;
   }
   else
   {
@@ -117,21 +124,6 @@ class ws-generator : generator
 
   rule run ( project name ? : property-set : sources * )
   {
-    echo ws-generator run --------------------- ;
-    echo $(project) ;
-    echo --------------------- ;
-    echo $(name) ;
-    echo --------------------- ;
-    echo $(property-set) ;
-    echo [ $(property-set).raw ] ;
-    echo --------------------- ;
-    echo $(sources) ;
-    for local s in $(sources)
-    {
-      echo [ $(s).name ] ;
-    }
-    echo --------------------- ;
-
     local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
     local ps ;
@@ -160,8 +152,56 @@ class ws-generator : generator
       }
     }
 
+    local properties = [ $(ps).raw ] ;
+
+    local processor = [ $(property-set).get <processor> ] ;
+
+    local instruction-set = [ $(property-set).get <instruction-set> ] ;
+    switch $(processor)
+    {
+      # @todo add microblaze etc
+      case cortexr5  : instruction-set ?= armv7 ;
+      case cortexa9  : instruction-set ?= armv7 ;
+      case cortexa53 : instruction-set ?= armv8 ;
+    }
+
+    local architecture = [ $(property-set).get <architecture> ] ;
+    switch $(processor)
+    {
+      case cortexr* : architecture ?= arm ;
+      case cortexa* : architecture ?= arm ;
+    }
+
+    local processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
+
     # add properties from createhw
-    ps = [ $(ps).add-raw <include>$(ws-dir)/hw ] ;
+    if ! [ $(property-set).contains-raw <architecture> ]
+    {
+      properties += <architecture>$(architecture) ;
+    }
+    if ! [ $(property-set).contains-raw <instructure-set> ]
+    {
+      properties += <instructure-set>$(instruction-set) ;
+    }
+    properties += <include>$(ws-dir)/hw ;
+
+    # @todo this overrides the toolset always
+    {
+      local toolset ;
+      switch $(processor)
+      {
+        case cortexr5 : toolset = gcc-7xilinxarmr5 ;
+        case cortexa53 : toolset = gcc-7xilinxaarch64 ;
+      }
+
+      properties += <toolset>$(toolset) ;
+    }
+
+    # @todo these should be done in gcc.jam really
+    # @todo we should be adding vpu etc here as well
+    # @todo maybe these can be added later once we have created hw, bsp, app?
+    properties += <cflags>-march=$(instruction-set) ;
+    properties += <cflags>-mtune=$(processor) ;
 
     # add properties from createbsp
     for local vt in $(vts)
@@ -170,48 +210,26 @@ class ws-generator : generator
       {
         local s = [ $(vt).search ] ;
 
-        ps = [ $(ps).add-raw <include>$(s:D)/include ] ;
+        properties += <include>$(s:D)/include ;
       }
     }
 
     # add properties from createapp
-    ps = [ $(ps).add-raw <linkflags>"-T $(ws-dir)/app/src/lscript.ld" ] ;
+    properties += <linkflags>"-T $(ws-dir)/app/src/lscript.ld" ;
 
-    echo "properties: " [ $(ps).raw ] ;
-    echo "virtual-targets:" ;
-    for local vt in $(vts)
-    {
-      echo [ $(vt).name ] ;
-    }
+    ps = [ property-set.create $(properties) ] ;
 
     return $(ps) $(vts) ;
   }
 
   rule generated-targets ( sources + : property-set : project name ? )
   {
-    echo ws-generator generated-targets --------------------- ;
-    echo $(project) ;
-    echo --------------------- ;
-    echo $(name) ;
-    echo --------------------- ;
-    echo $(property-set) ;
-    echo [ $(property-set).raw ] ;
-    echo --------------------- ;
-    echo $(sources) ;
-    for local s in $(sources)
-    {
-      echo [ $(s).name ] ;
-    }
-    echo --------------------- ;
-
     local source = $(sources[0]) ;
 
     if ! $(name)
     {
       name = [ generator.determine-output-name $(source) ] ;
     }
-
-    echo "name = $(name)" ;
 
     local a = [ class.new action $(source) : xsdk.ws-generator : $(property-set) ] ;
 
@@ -268,32 +286,8 @@ class ws-generator : generator
       shared = true ;
     }
 
-    local processor ;
-    if <instruction-set>armv7 in $(properties)
-    {
-      processor = cortexr5 ;
-    }
-    else if <instruction-set>armv8 in $(properties)
-    {
-      processor = cortexa53 ;
-    }
-    else
-    {
-      #errors.error "unsupported processor" ;
-      echo "error: unsupported processor" ;
-    }
-
-    # @todo more
-    local processor-id ;
-    if <xsdk-processor-id>0 in $(properties)
-    {
-      processor-id = 0 ;
-    }
-    else
-    {
-      #errors.error "unsupported processor id" ;
-      echo "error: unsupported processor id" ;
-    }
+    local processor = [ feature.get-values <processor> : $(properties) ] ;
+    local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
 
     # @todo use <library> (or others) to find the libraries by searching the list, get list from xsct repo?
     t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/psu_$(processor)_$(processor-id)/lib : $(a) ] ;
@@ -310,15 +304,13 @@ class ws-generator : generator
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
-    echo "properties: " [ $(property-set).raw ] ;
-    echo "virtual-targets:" ;
-    for local vt in $(virtual-targets)
-    {
-      echo [ $(vt).name ] ;
-    }
-
     return $(virtual-targets) ;
   }
+}
+
+rule root ( )
+{
+  return $(root) ;
 }
 
 # @todo could also call out the source files?
@@ -338,8 +330,7 @@ toolset.flags xsdk.ws-generator XSDK_OS <target-os>elf : "-os standalone" ;
 toolset.flags xsdk.ws-generator XSDK_OS <target-os>freertos : "-os freertos10_xilinx" ;
 toolset.flags xsdk.ws-generator XSDK_OS <target-os>xilsystem : "-os xilsystem" ;
 
-toolset.flags xsdk.ws-generator XSDK_PROC <instruction-set>armv8 : cortexa53 ;
-toolset.flags xsdk.ws-generator XSDK_PROC <instruction-set>armv7 : cortexr5 ;
+toolset.flags xsdk.ws-generator XSDK_PROC <processor> ;
 
 toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>0 : 0 ;
 toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>1 : 1 ;
@@ -353,15 +344,6 @@ toolset.flags xsdk.ws-generator XSDK_LINK <link>static : configbsp-pass-static ;
 # generates the tcl script to be run by the action
 rule ws-generator ( targets + : sources + : properties * )
 {
-  echo ws-generator rule ;
-  echo ------------------- ;
-  echo $(targets) ;
-  echo ------------------- ;
-  echo $(sources) ;
-  echo ------------------- ;
-  echo $(properties) ;
-  echo ------------------- ;
-
   local ws-dir = [ on $(targets[1]) return $(LOCATE) ] ;
 
   local ws = $(ws-dir)/$(targets[1]:G=) ;
@@ -374,32 +356,8 @@ rule ws-generator ( targets + : sources + : properties * )
     shared = true ;
   }
 
-  local processor ;
-  if <instruction-set>armv7 in $(properties)
-  {
-    processor = cortexr5 ;
-  }
-  else if <instruction-set>armv8 in $(properties)
-  {
-    processor = cortexa53 ;
-  }
-  else
-  {
-    #errors.error "unsupported processor" ;
-    echo "error: unsupported processor" ;
-  }
-
-  # @todo more
-  local processor-id ;
-  if <xsdk-processor-id>0 in $(properties)
-  {
-    processor-id = 0 ;
-  }
-  else
-  {
-    #errors.error "unsupported processor id" ;
-    echo "error: unsupported processor id" ;
-  }
+  local processor = [ feature.get-values <processor> : $(properties) ] ;
+  local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
 
   local lines =
     "#!/usr/bin/env xsct"
@@ -419,49 +377,26 @@ rule ws-generator ( targets + : sources + : properties * )
   print.text $(lines) : true ;
 }
 
+# @todo this would be better done somewhere else for portability
 actions ws-generator
 {
-  echo -------------------
-  pwd
-  echo -------------------
-  # $(>)
-  echo -------------------
-  # $(<)
-  echo -------------------
-  # $(XSDK_TEMPLATE)
-  # $(XSDK_LIBRARIES)
-  # $(XSDK_CONFIGURATIONS)
-  # $(XSDK_LANGUAGE)
-  # $(XSDK_OS)
-  # $(XSDK_PROC)
-  # $(XSDK_PROC_ID)
-  # $(XSDK_LINK)
-  echo -------------------
-  echo "setws $(<[1])" > $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createhw -name hw -hwspec $(>)" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createbsp -name bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  # @todo print out all available options
+  echo "setws $(<[1])" > $(<[1]:S=.tcl)
+  echo "createhw -name hw -hwspec $(>)" >> $(<[1]:S=.tcl)
+  echo "createbsp -name bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:S=.tcl)
   # @todo not portable
   # @todo figure out how to expand this right
   for l in $(XSDK_LIBRARIES) ; do
-    echo "setlib -bsp bsp -lib ${l}" >> $(<[1]:D)/$(<[1]:D=).tcl
+    echo "setlib -bsp bsp -lib ${l}" >> $(<[1]:S=.tcl)
   done
   # @todo not portable
   # @todo figure out how to expand this right
   for c in "$(XSDK_CONFIGURATIONS)" ; do
-    echo "configbsp -bsp bsp ${c}" >> $(<[1]:D)/$(<[1]:D=).tcl
+    echo "configbsp -bsp bsp ${c}" >> $(<[1]:S=.tcl)
   done
-  echo "updatemss -mss $(<[1])/bsp/system.mss" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "regenbsp -bsp bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "projects -build -type bsp -name bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  # @todo print out all available options
-  echo running the following script -------------------
-  cat $(<[1]:D)/$(<[1]:D=).tcl
-  $(.bin)/xsct $(<[1]:D)/$(<[1]:D=).tcl > $(<[1]:D)/$(<[1]:D=).log
-  cat $(<[1]:D)/$(<[1]:D=).log
-  echo -------------------
+  echo "updatemss -mss $(<[1])/bsp/system.mss" >> $(<[1]:S=.tcl)
+  echo "regenbsp -bsp bsp" >> $(<[1]:S=.tcl)
+  echo "projects -build -type bsp -name bsp" >> $(<[1]:S=.tcl)
+  echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:S=.tcl)
+  $(.xsct) $(<[1]:S=.tcl)
 }
