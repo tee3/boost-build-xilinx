@@ -30,7 +30,8 @@ feature.extend instruction-set :
   armv8
   ;
 
-feature.feature xsdk-template : : optional free link-incompatible ;
+feature.feature xsdk-template : "" : link-incompatible ;
+feature.set-default xsdk-template : "" ;
 feature.feature xsdk-library : : optional free ;
 feature.feature xsdk-configuration : : optional free link-incompatible ;
 feature.feature xsdk-language : c c++ : propagated link-incompatible ;
@@ -455,8 +456,7 @@ actions ws-generator
   echo "regenbsp -bsp bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "projects -build -type bsp -name bsp" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "" $(<[1]:D)/$(<[1]:D=).tcl
-  #echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
-  echo "createapp -name app -app {} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
+  echo "createapp -name app -app {$(XSDK_TEMPLATE)} $(XSDK_LANGUAGE) -bsp bsp -proc psu_$(XSDK_PROC)_$(XSDK_PROC_ID) -hwproject hw $(XSDK_OS)" >> $(<[1]:D)/$(<[1]:D=).tcl
   echo "" $(<[1]:D)/$(<[1]:D=).tcl
   # @todo print out all available options
   echo running the following script -------------------
