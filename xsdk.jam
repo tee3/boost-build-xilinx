@@ -108,6 +108,11 @@ rule init ( version ? : command * : options * )
     }
 
     toolset.flags xsdk .xsct $(condition) : $(root)/bin/xsct ;
+
+    using gcc : 7xilinxaarch32 : $(root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
+    using gcc : 7xilinxaarch64 : $(root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
+    using gcc : 7xilinxmicroblaze : $(root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+    using gcc : 7xilinxarmr5 : $(root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
   }
   else
   {
@@ -213,17 +218,19 @@ class ws-generator : generator
     }
     properties += <include>$(ws-dir)/hw ;
 
-    # @todo this overrides the toolset always
-    {
-      local toolset ;
-      switch $(processor)
-      {
-        case cortexr5 : toolset = gcc-7xilinxarmr5 ;
-        case cortexa53 : toolset = gcc-7xilinxaarch64 ;
-      }
-
-      properties += <relevant>toolset <toolset>$(toolset) ;
-    }
+### @todo this cannot work, cannot set toolset in usage-requirements
+###    local toolset = gcc ;
+###    local toolset-version ;
+###    switch $(processor)
+###    {
+###      case cortexr5 : toolset-version = 7xilinxarmr5 ;
+###      case cortexa53 : toolset-version = 7xilinxaarch64 ;
+###    }
+###
+###    toolset = clang ;
+###    toolset-version = 7 ;
+###
+###    properties +=  <toolset>$(toolset)-$(toolset-version) ;
 
     # @todo these should be done in gcc.jam really
     # @todo we should be adding vpu etc here as well

@@ -1,10 +1,3 @@
 import ../xsdk ;
 
 using xsdk ;
-
-local root = [ xsdk.root ] ;
-
-using gcc : 7xilinxaarch32 : $(root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
-using gcc : 7xilinxaarch64 : $(root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
-using gcc : 7xilinxmicroblaze : $(root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
-using gcc : 7xilinxarmr5 : $(root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
