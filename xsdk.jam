@@ -115,34 +115,6 @@ rule init ( version ? : command * : options * )
   }
 }
 
-class xsct-generator : generator
-{
-  rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
-  {
-    generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
-  }
-
-  rule run ( project name ? : property-set : sources * )
-  {
-    return [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
-  }
-
-  rule generated-targets ( sources + : property-set : project name ? )
-  {
-    local source = $(sources[0]) ;
-
-    if ! $(name)
-    {
-      name = [ generator.determine-output-name $(source) ] ;
-    }
-
-    local a = [ class.new action $(source) : xsdk.xsct-generator : $(property-set) ] ;
-    local t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
-
-    return [ virtual-target.register $(t) ] ;
-  }
-}
-
 class ws-generator : generator
 {
   rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
@@ -259,11 +231,19 @@ class ws-generator : generator
       name = [ generator.determine-output-name $(source) ] ;
     }
 
-    local a = [ class.new action $(source) : xsdk.ws-generator : $(property-set) ] ;
-
     local virtual-targets ;
     local t ;
+    local a ;
 
+    a = [ class.new action build : xsdk.generate-build : $(property-set) ] ;
+    t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    a = [ class.new action run : xsdk.generate-run : $(property-set) ] ;
+    t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    a = [ class.new action $(source) : xsdk.ws-generator : $(property-set) ] ;
     t = [ class.new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
@@ -338,42 +318,40 @@ rule root ( )
   return $(root) ;
 }
 
-generators.register [ class.new xsct-generator xsdk.xsct-generator : HDF : XSCT ] ;
-generators.register [ class.new ws-generator xsdk.ws-generator : XSCT : XSDKWS XSCT BIT H C TCL MSS LIB ] ;
+generators.register [ class.new ws-generator xsdk.ws-generator : HDF : XSCT XSDKWS BIT H C TCL MSS LIB ] ;
 
 # @todo these magically result in XSDKWS being dependent on the right stuff
-toolset.flags xsdk.xsct-generator XSDK_TEMPLATE <xsdk-template> ;
+toolset.flags xsdk.ws-generator XSDK_TEMPLATE <xsdk-template> ;
 
-toolset.flags xsdk.xsct-generator XSDK_LIBRARIES <xsdk-library> ;
+toolset.flags xsdk.ws-generator XSDK_LIBRARIES <xsdk-library> ;
 
-toolset.flags xsdk.xsct-generator XSDK_CONFIGURATIONS <xsdk-configuration> ;
+toolset.flags xsdk.ws-generator XSDK_CONFIGURATIONS <xsdk-configuration> ;
 
-toolset.flags xsdk.xsct-generator XSDK_LANGUAGE <xsdk-language>c : "-lang c" ;
-toolset.flags xsdk.xsct-generator XSDK_LANGUAGE <xsdk-language>c++ : "-lang c++" ;
+toolset.flags xsdk.ws-generator XSDK_LANGUAGE <xsdk-language>c : "-lang c" ;
+toolset.flags xsdk.ws-generator XSDK_LANGUAGE <xsdk-language>c++ : "-lang c++" ;
 
-toolset.flags xsdk.xsct-generator XSDK_OS <target-os>elf : "-os standalone" ;
-toolset.flags xsdk.xsct-generator XSDK_OS <target-os>freertos : "-os freertos10_xilinx" ;
-toolset.flags xsdk.xsct-generator XSDK_OS <target-os>xilsystem : "-os xilsystem" ;
+toolset.flags xsdk.ws-generator XSDK_OS <target-os>elf : "-os standalone" ;
+toolset.flags xsdk.ws-generator XSDK_OS <target-os>freertos : "-os freertos10_xilinx" ;
+toolset.flags xsdk.ws-generator XSDK_OS <target-os>xilsystem : "-os xilsystem" ;
 
-toolset.flags xsdk.xsct-generator XSDK_PROC <processor> ;
+toolset.flags xsdk.ws-generator XSDK_PROC <processor> ;
 
-toolset.flags xsdk.xsct-generator XSDK_PROC_ID <xsdk-processor-id>0 : 0 ;
-toolset.flags xsdk.xsct-generator XSDK_PROC_ID <xsdk-processor-id>1 : 1 ;
-toolset.flags xsdk.xsct-generator XSDK_PROC_ID <xsdk-processor-id>2 : 2 ;
-toolset.flags xsdk.xsct-generator XSDK_PROC_ID <xsdk-processor-id>3 : 3 ;
+toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>0 : 0 ;
+toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>1 : 1 ;
+toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>2 : 2 ;
+toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>3 : 3 ;
 
-toolset.flags xsdk.xsct-generator XSDK_LINK <link>shared : configbsp-pass-shared ;
-toolset.flags xsdk.xsct-generator XSDK_LINK <link>static : configbsp-pass-static ;
+toolset.flags xsdk.ws-generator XSDK_LINK <link>shared : configbsp-pass-shared ;
+toolset.flags xsdk.ws-generator XSDK_LINK <link>static : configbsp-pass-static ;
 
-rule xsct-generator ( targets + : sources + : properties * )
+rule generate-build ( targets + : sources + : properties * )
 {
-  local ws-dir = [ on $(targets[2]) return $(LOCATE) ] ;
+  local script-target = $(targets[1]) ;
+  local ws-target = $(targets[2]) ;
+  local ws-dir = [ on $(ws-target) return $(LOCATE) ] ;
+  local ws = $(ws-dir)/$(ws-target:G=) ;
 
-  local ws = $(ws-dir)/$(targets[2]:G=) ;
-
-  local ws-dir = [ on $(targets[2]) return $(LOCATE) ] ;
-  local ws = $(ws-dir)/$(targets[2]:G=) ;
-  local hwspec = $(sources[1]:G=) ;
+  local hdf = $(ws)/$(hdf-source:G=) ;
 
   local shared ;
   if <link>shared in $(properties)
@@ -413,7 +391,7 @@ rule xsct-generator ( targets + : sources + : properties * )
 
   # create the hardware
   # @todo check for errors
-  lines += "createhw -name hw -hwspec $(hwspec)" ;
+  lines += "createhw -name hw -hwspec $(hdf)" ;
 
   # create and configure the bsp
   # @todo print out all available options nicely
@@ -442,7 +420,124 @@ rule xsct-generator ( targets + : sources + : properties * )
   # @todo check for errors
   lines += "projects -build -type bsp -name bsp" ;
 
-  print.output $(targets[1]) ;
+  print.output $(script-target) ;
+  print.text "#!/usr/bin/env xsct" : true ;
+  print.text "# generated by xsdk.jam" ;
+  print.lines $(lines) ;
+  print.text "" ;
+}
+
+rule generate-run ( targets + : sources + : properties * )
+{
+  local script-target = $(targets[1]) ;
+  local ws-target = $(targets[2]) ;
+  local ws-dir = [ on $(ws-target) return $(LOCATE) ] ;
+  local ws = $(ws-dir)/$(ws-target:G=) ;
+
+  local fpga-name = $(hdf-source:G=) ;
+
+  local hdf = $(ws)/hw/system.hdf ;
+  local bit = $(ws)/hw/$(fpga-name) ;
+
+  local shared ;
+  if <link>shared in $(properties)
+  {
+    shared = true ;
+  }
+
+  local processor = [ feature.get-values <processor> : $(properties) ] ;
+  local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
+  local target-os = [ feature.get-values <target-os> : $(properties) ] ;
+
+  local xilinx-os-name ;
+  switch $(target-os)
+  {
+    case elf : xilinx-os-name = standalone ;
+    case freertos : xilinx-os-name = freertos ;
+  }
+
+  local xilinx-app-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
+  xilinx-app-template ?= "" ;
+
+  local xilinx-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
+  xilinx-language ?= "c++" ;
+
+  local lines ;
+
+  lines += "set xilinxsdkroot [file normalize $(.root)]" ;
+
+  # set the workspace
+  # @todo delete the workspace if it exists
+  # @todo check for errors
+  lines +=
+    "if {$argc != 1} then {"
+    "    puts \"usage: $argv0 <program>\""
+    "    exit 1"
+    "}"
+    ;
+
+  lines +=
+    "set ws $(ws)"
+
+    "set hdf [file normalize $(hdf)]"
+    "set bit [file normalize $(bit)]"
+
+    "set jtag_cable_name \"*\""
+
+    "if {! [file exists $ws]} {"
+    "    puts \"error: workspace $ws does not exist\""
+    "    exit 1"
+    "}"
+    "setws -switch $ws"
+
+    "connect"
+
+    "source [file normalize [file join $xilinxsdkroot scripts sdk util zynqmp_utils.tcl]]"
+
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "rst -system"
+    "after 3000"
+
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "reset_apu"
+
+    "targets -set -nocase -filter {name =~ \"RPU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "clear_rpu_reset"
+    "enable_split_mode"
+
+    "targets -set -filter {jtag_cable_name =~ $jtag_cable_name && level==0} -index 0"
+    "fpga -file $bit"
+
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "loadhw -hw $hdf -mem-ranges [list {  0x80000000   0xbfffffff} { 0x400000000  0x5ffffffff} {0x1000000000 0x7fffffffff}]"
+
+    "configparams force-mem-access 1"
+    "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+
+    "source [file join $ws hw psu_init.tcl]"
+    "after 3000"
+    "psu_init"
+    "source [file normalize [file join $xilinxsdkroot scripts sdk util fsbl.tcl]]"
+    "after 1000"
+    "psu_ps_pl_isolation_removal"
+    "after 1000"
+    "psu_ps_pl_reset_config"
+    "catch {psu_protection}"
+
+    "targets -set -nocase -filter {name =~ \"*R5*0\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
+    "rst -processor"
+    "catch {XFsbl_TcmEccInit R5_0}"
+
+    "dow $program"
+
+    "bpadd -addr &main"
+
+    "configparams force-mem-access 0"
+
+    "con"
+  ;
+
+  print.output $(script-target) ;
   print.text "#!/usr/bin/env xsct" : true ;
   print.text "# generated by xsdk.jam" ;
   print.lines $(lines) ;
