@@ -22,7 +22,8 @@ if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 }
 
 feature.extend target-os :
-  freertos
+# @todo this should be done in boost.build to fix gcc
+#  freertos
   xilsystem
   ;
 
@@ -355,10 +356,10 @@ rule generate-build ( targets + : sources + : properties * )
     case freertos : xsdk-os-name = freertos10_xilinx ;
   }
 
-  local xsdk-app-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
-  xsdk-app-template ?= "" ;
+  local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
+  xsdk-template ?= "" ;
 
-  local xsdk-app-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
+  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
   local lines ;
 
@@ -398,7 +399,7 @@ rule generate-build ( targets + : sources + : properties * )
 
   # create a dummy application for the linker file
   # @todo check for errors
-  lines += "createapp -name app -app {$(xsdk-app-template)} -lang $(xsdk-app-language) -bsp bsp -proc psu_$(processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
+  lines += "createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
 
   # build the bsp (but not the application)
   # @todo check for errors
@@ -442,10 +443,10 @@ rule generate-run ( targets + : sources + : properties * )
     case freertos : xsdk-os-name = freertos10_xilinx ;
   }
 
-  local xsdk-app-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
-  xsdk-app-template ?= "" ;
+  local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
+  xsdk-template ?= "" ;
 
-  local xsdk-app-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
+  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
   local lines ;
 
@@ -534,10 +535,10 @@ rule generate-run ( targets + : sources + : properties * )
 # @todo these magically result in XSDKWS being dependent on the right stuff
 toolset.flags xsdk.ws-generator XSDK_CONFIGURATIONS <xsdk-configuration> ;
 
-toolset.flags xsdk.ws-generator XSDK_APP_TEMPLATE <xsdk-template> ;
+toolset.flags xsdk.ws-generator XSDK_TEMPLATE <xsdk-template> ;
 
-toolset.flags xsdk.ws-generator XSDK_APP_LANGUAGE <xsdk-language>c : "-lang c" ;
-toolset.flags xsdk.ws-generator XSDK_APP_LANGUAGE <xsdk-language>c++ : "-lang c++" ;
+toolset.flags xsdk.ws-generator XSDK_LANGUAGE <xsdk-language>c : "-lang c" ;
+toolset.flags xsdk.ws-generator XSDK_LANGUAGE <xsdk-language>c++ : "-lang c++" ;
 
 toolset.flags xsdk.ws-generator XSDK_LIBRARIES <xsdk-library> ;
 
