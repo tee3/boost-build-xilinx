@@ -190,19 +190,14 @@ class ws-generator : generator
     }
     properties += <include>$(ws-dir)/hw ;
 
-### @todo this cannot work, cannot set toolset in usage-requirements
-###    local toolset = gcc ;
-###    local toolset-version ;
+### # @todo this cannot work due to toolset and usage-requirement
 ###    switch $(processor)
 ###    {
-###      case cortex-r5 : toolset-version = 7xilinxarmr5 ;
-###      case cortex-a53 : toolset-version = 7xilinxaarch64 ;
+###      case cortex-r5 : toolset = gcc-7xilinxarmr5 ;
+###      case cortex-a53 : toolset = gcc-7xilinxaarch64 ;
 ###    }
 ###
-###    toolset = clang ;
-###    toolset-version = 7 ;
-###
-###    properties +=  <toolset>$(toolset)-$(toolset-version) ;
+###    properties += <relevant>toolset <toolset>$(toolset) ;
 
     # @todo these should be done in gcc.jam really
     # @todo we should be adding vpu etc here as well
