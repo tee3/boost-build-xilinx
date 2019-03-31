@@ -22,8 +22,7 @@ if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 }
 
 feature.extend target-os :
-# @todo this should be done in boost.build to fix gcc
-#  freertos
+  freertos
   xilsystem
   ;
 
