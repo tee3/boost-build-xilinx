@@ -23,7 +23,7 @@ if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 
 feature.extend target-os :
   freertos
-  xilsystem
+  xilkernel
   ;
 
 feature.extend instruction-set :
@@ -76,7 +76,7 @@ rule init ( version ? : command * : options * )
 
     if $(command)
     {
-      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval 'puts [version]'" ] : "\n" ] ;
+      local output-lines = [ SPLIT_BY_CHARACTERS [ SHELL "\"$(command)\" -eval \"puts [version]\"" ] : "\n" ] ;
 
       local detected-version-components = [ MATCH "xsct ([0-9][0-9][0-9][0-9]\\.[0-9])" : $(output-lines[1]) ] ;
       local detected-version = $(detected-version-components[1]) ;
@@ -110,6 +110,15 @@ rule init ( version ? : command * : options * )
     if $(.debug-configuration)
     {
       ECHO "xsdk: using xsdk" $(version) "at" $(root) ;
+
+      ECHO "xsdk: available application templates" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -apps]\"" ] ;
+      ECHO "xsdk: available operating systems" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -os]\"" ] ;
+      ECHO "xsdk: available libraries" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -libs]\"" ] ;
+      ECHO "xsdk: available drivers" ;
+      ECHO [ SHELL "\"$(root)/bin/xsct\" -eval \"puts [repo -drivers]\"" ] ;
     }
 
     toolset.flags xsdk .xsct $(condition) : $(root)/bin/xsct ;
@@ -327,7 +336,7 @@ toolset.flags xsdk.generate-build-and-run XSDK_LIBRARIES <xsdk-library> ;
 
 toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os>elf : "-os standalone" ;
 toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os>freertos : "-os freertos10_xilinx" ;
-toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os>xilsystem : "-os xilsystem" ;
+toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os>xilkernel : "-os xilkernel" ;
 
 toolset.flags xsdk.generate-build-and-run XSDK_PROC <processor> ;
 
@@ -571,7 +580,7 @@ actions run-xsct
 {
   # echo ws-generator $(>) " : " $(<) " ;"
 
-  $(.xsct) $(>[1]) && $(TOUCH) $(<[1])
+  "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
 
 # @todo do nothing
