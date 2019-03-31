@@ -436,6 +436,7 @@ rule generate-build ( targets + : sources + : properties * )
     # @todo check for errors
     lines += "configbsp -bsp bsp $(c)" ;
   }
+
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
 
