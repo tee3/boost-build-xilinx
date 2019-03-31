@@ -1,9 +1,11 @@
 # @todo ensure xsdk fails if not support properties
 project
   : default-build
+    <toolset>gcc
+
     <target-os>elf
 
-    <processor>cortexr5
+    <processor>cortex-r5
 
     <link>static
   ;

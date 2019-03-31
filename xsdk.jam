@@ -27,16 +27,19 @@ feature.extend target-os :
   ;
 
 feature.extend instruction-set :
-  armv8
+  armv7-a
+  armv7-r
+  armv8-a
+  armv8-r
   ;
 
 # @todo this should be part of boost.build
 # @todo this depends on what the hdf supports too
 feature.feature processor
   : # values
-    cortexa9
-    cortexa53
-    cortexr5
+    cortex-a9
+    cortex-a53
+    cortex-r5
   : # attributes
     propagated optional
   ;
@@ -162,19 +165,19 @@ class ws-generator : generator
     switch $(processor)
     {
       # @todo add microblaze etc
-      case cortexr5  : instruction-set ?= armv7 ;
-      case cortexa9  : instruction-set ?= armv7 ;
-      case cortexa53 : instruction-set ?= armv8 ;
+      case cortex-r5  : instruction-set ?= armv7-r ;
+      case cortex-a9  : instruction-set ?= armv7-a ;
+      case cortex-a53 : instruction-set ?= armv8-a ;
     }
 
     local architecture = [ $(property-set).get <architecture> ] ;
     switch $(processor)
     {
-      case cortexr* : architecture ?= arm ;
-      case cortexa* : architecture ?= arm ;
+      case cortex-r* : architecture ?= arm ;
+      case cortex-a* : architecture ?= arm ;
     }
 
-    local processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
+    local xsdk-processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
 
     # add properties from createhw
     if ! [ $(property-set).contains-raw <architecture> ]
@@ -192,8 +195,8 @@ class ws-generator : generator
 ###    local toolset-version ;
 ###    switch $(processor)
 ###    {
-###      case cortexr5 : toolset-version = 7xilinxarmr5 ;
-###      case cortexa53 : toolset-version = 7xilinxaarch64 ;
+###      case cortex-r5 : toolset-version = 7xilinxarmr5 ;
+###      case cortex-a53 : toolset-version = 7xilinxaarch64 ;
 ###    }
 ###
 ###    toolset = clang ;
@@ -205,11 +208,7 @@ class ws-generator : generator
     # @todo we should be adding vpu etc here as well
     # @todo maybe these can be added later once we have created hw, bsp, app?
     properties += <cflags>-march=$(instruction-set) ;
-    switch $(processor)
-    {
-      case cortexr5 : properties += <cflags>-mtune=cortex-r5 ;
-      case cortexa53 : properties += <cflags>-mtune=cortex-a53 ;
-    }
+    properties += <cflags>-mtune=$(processor) ;
 
     # add properties from createbsp
     for local vt in $(vts)
@@ -249,7 +248,7 @@ class ws-generator : generator
     local run-target = [ class.new file-target run : XSCT : $(project) : $(run-action) ] ;
     virtual-targets += [ virtual-target.register $(run-target) ] ;
 
-    local a = [ class.new action $(build-target) : xsdk.ws-generator : $(property-set) ] ;
+    local a = [ class.new action $(build-target) $(source) : xsdk.ws-generator : $(property-set) ] ;
 
     local t ;
 
@@ -298,19 +297,24 @@ class ws-generator : generator
     }
 
     local processor = [ feature.get-values <processor> : $(properties) ] ;
-    local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
+    switch $(processor)
+    {
+      case cortex-r5 : xsdk-processor = cortexr5 ;
+      case cortex-a53 : xsdk-processor = cortexa53 ;
+    }
+    local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
 
     # @todo use <library> (or others) to find the libraries by searching the list, get list from xsct repo?
-    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(processor)_$(processor-id)/lib : $(a) ] ;
+    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(xsdk-processor-id)/lib : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
     if <target-os>freertos in $(properties)
     {
-      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(processor)_$(processor-id)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(xsdk-processor-id)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
     for local l in [ $(property-set).get <xsdk-library> ]
     {
-      t = [ class.new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(processor)_$(processor-id)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(xsdk-processor-id)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
@@ -345,7 +349,12 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   local processor = [ feature.get-values <processor> : $(properties) ] ;
-  local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
+  switch $(processor)
+  {
+    case cortex-r5 : xsdk-processor = cortexr5 ;
+    case cortex-a53 : xsdk-processor = cortexa53 ;
+  }
+  local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
   local target-os = [ feature.get-values <target-os> : $(properties) ] ;
 
   local xsdk-os-name ;
@@ -380,7 +389,7 @@ rule generate-build ( targets + : sources + : properties * )
   # create and configure the bsp
   # @todo print out all available options nicely
   # @todo check for errors
-  lines += "createbsp -name bsp -proc psu_$(processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
+  lines += "createbsp -name bsp -proc psu_$(xsdk-processor)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os-name)" ;
   # @todo print out all available options for each library nicely
   for l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
@@ -398,7 +407,7 @@ rule generate-build ( targets + : sources + : properties * )
 
   # create a dummy application for the linker file
   # @todo check for errors
-  lines += "createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
+  lines += "createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(xsdk-processor)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os-name)" ;
 
   # build the bsp (but not the application)
   # @todo check for errors
@@ -432,7 +441,7 @@ rule generate-run ( targets + : sources + : properties * )
   }
 
   local processor = [ feature.get-values <processor> : $(properties) ] ;
-  local processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
+  local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
   local target-os = [ feature.get-values <target-os> : $(properties) ] ;
 
   local xsdk-os-name ;
@@ -565,7 +574,7 @@ TOUCH = [ common.file-touch-command ] ;
 
 actions ws-generator
 {
-  echo ws-generator $(>) " : " $(<) " ;"
+  # echo ws-generator $(>) " : " $(<) " ;"
 
-  $(.xsct) $(>) && $(TOUCH) $(<[1])
+  $(.xsct) $(>[1]) && $(TOUCH) $(<[1])
 }
