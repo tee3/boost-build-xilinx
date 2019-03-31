@@ -350,7 +350,7 @@ rule generate-build-and-run ( targets + : sources + : properties * )
   echo generate-build-and-run $(targets) " : " $(sources) " : " $(properties) " ;" ;
 
   generate-build $(targets[1]) : $(sources) : $(properties) ;
-  generate-run $(targets[2]) : $(sources) : $(properties) ;
+  generate-run $(targets[2]) : $(targets[1]) $(sources) : $(properties) ;
 }
 
 rule generate-build ( targets + : sources + : properties * )
