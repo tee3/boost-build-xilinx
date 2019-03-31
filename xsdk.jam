@@ -371,16 +371,18 @@ rule generate-build ( targets + : sources + : properties * )
 
   local lines ;
 
-  # set the workspace
-  # @todo delete the workspace if it exists
   # @todo check for errors
-  lines +=
+
+  # @todo delete the workspace if it exists
+##  lines +=
 ###    "if {[file exists $(ws)]} then {"
 ###    "    puts \"error: $(ws) exists.\""
 ###    "    exit 1"
 ###    "}"
-    "setws $(ws)"
-  ;
+##  ;
+
+  # set the workspace
+  lines += "setws $(ws)" ;
 
   # create the hardware
   # @todo check for errors
