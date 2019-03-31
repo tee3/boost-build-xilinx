@@ -553,14 +553,20 @@ toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>1 : 1 ;
 toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>2 : 2 ;
 toolset.flags xsdk.ws-generator XSDK_PROC_ID <xsdk-processor-id>3 : 3 ;
 
+# @todo fill in
 toolset.flags xsdk.ws-generator XSDK_LINK <link>shared : configbsp-pass-shared ;
 toolset.flags xsdk.ws-generator XSDK_LINK <link>static : configbsp-pass-static ;
+
+# @todo fill in
+toolset.flags xsdk.ws-generator XSDK_LINK <optimization>off : configbsp-pass-optimization-off ;
+toolset.flags xsdk.ws-generator XSDK_LINK <optimization>speed : configbsp-pass-optimization-speed ;
+toolset.flags xsdk.ws-generator XSDK_LINK <optimization>space : configbsp-pass-optimization-space ;
 
 TOUCH = [ common.file-touch-command ] ;
 
 actions ws-generator
 {
-  # ws-generator $(>) " : " $(<) " ;"
+  echo ws-generator $(>) " : " $(<) " ;"
 
   $(.xsct) $(>) && $(TOUCH) $(<[1])
 }
