@@ -27,6 +27,8 @@ exe example
 
     ws
   : # requirements
+    <processor>cortexr5:<toolset>gcc-7xilinxarmr5
+    <processor>cortexa53:<toolset>gcc-7xilinxaarch64
   : # default-build
   : # usage-requirements
   ;
