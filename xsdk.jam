@@ -213,6 +213,10 @@ class ws-generator : generator
     # @todo maybe these can be added later once we have created hw, bsp, app?
     properties += <cflags>-march=$(instruction-set) ;
     properties += <cflags>-mtune=$(processor) ;
+    switch $(processor)
+    {
+      case cortex-r5 : properties += <cflags>-mfpu=vfpv3-d16 ;
+    }
 
     # add properties from createbsp
     for local vt in $(vts)
@@ -226,6 +230,12 @@ class ws-generator : generator
     }
 
     # add properties from createapp
+
+    switch $(processor)
+    {
+      case cortex-r5 : properties += <define>ARMR5 ;
+    }
+
     properties += <linkflags>"-T $(ws-dir)/app/src/lscript.ld" ;
 
     ps = [ property-set.create $(properties) ] ;
