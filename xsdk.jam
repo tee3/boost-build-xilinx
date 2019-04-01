@@ -5,7 +5,9 @@
 import os ;
 import path ;
 import print ;
+import sequence ;
 import errors ;
+import assert ;
 
 import toolset ;
 import project ;
@@ -412,7 +414,8 @@ toolset.flags xsdk.generate-build-and-run XSDK_LINK <optimization>space : config
 
 rule generate-build-and-run ( targets + : sources + : properties * )
 {
-  echo generate-build-and-run $(targets) " : " $(sources) " : " $(properties) " ;" ;
+  assert.equal [ sequence.length $(targets) ] : 2 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
 
   generate-build $(targets[1]) : $(sources) : $(properties) ;
   generate-run $(targets[2]) : $(targets[1]) $(sources) : $(properties) ;
@@ -420,9 +423,10 @@ rule generate-build-and-run ( targets + : sources + : properties * )
 
 rule generate-build ( targets + : sources + : properties * )
 {
-  check-properties $(properties) ;
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
 
-  echo generate-build $(targets) " : " $(sources) " : " $(properties) " ;" ;
+  check-properties $(properties) ;
 
   local target = $(targets[1]) ;
   local source = $(sources[1]) ;
@@ -515,9 +519,10 @@ rule generate-build ( targets + : sources + : properties * )
 
 rule generate-run ( targets + : sources + : properties * )
 {
-  check-properties $(properties) ;
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 2 ;
 
-  echo generate-run $(targets) " : " $(sources) " : " $(properties) " ;" ;
+  check-properties $(properties) ;
 
   local target = $(targets[1]) ;
   local build-source = $(sources[1]) ;
@@ -639,14 +644,15 @@ TOUCH = [ common.file-touch-command ] ;
 
 actions run-xsct
 {
-  # echo ws-generator $(>) " : " $(<) " ;"
-
   "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
 
 # @todo do nothing
 rule ws-generator ( targets + : sources + : properties * )
 {
+  # assert.equal [ sequence.length $(targets) ] : 2 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
+
   check-properties $(properties) ;
 }
 

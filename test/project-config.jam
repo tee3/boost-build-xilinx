@@ -4,6 +4,8 @@ using xsdk ;
 
 local xsdk-root = [ xsdk.root ] ;
 
+echo "project-config: using XSDK at $(xsdk-root)" ;
+
 using gcc : 7xilinxaarch32 : $(xsdk-root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
 using gcc : 7xilinxaarch64 : $(xsdk-root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
 using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
