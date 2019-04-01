@@ -2,6 +2,8 @@
 
 # @todo need to generate an app to get the linker script
 
+import os ;
+import path ;
 import print ;
 import errors ;
 
@@ -14,32 +16,70 @@ import "class" ;
 import common ;
 import generators ;
 
-import os ;
-
 if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 {
   .debug-configuration = true ;
 }
 
-feature.extend target-os :
+target-os-supported =
+  elf
   freertos
   xilkernel
   ;
 
-feature.extend instruction-set :
+# @todo until all target-os supported in Boost.Build
+for t in $(target-os-supported)
+{
+  local target-os-values = [ feature.values <target-os> ] ;
+  if ! $(t) in $(target-os-values)
+  {
+    feature.extend target-os : $(t) ;
+  }
+}
+
+architecture-supported =
+  arm
+  microblaze
+  ;
+
+# @todo until all architecture supported in Boost.Build
+for t in $(architecture-supported)
+{
+  local architecture-values = [ feature.values <architecture> ] ;
+  if ! $(t) in $(architecture-values)
+  {
+    feature.extend architecture : $(t) ;
+  }
+}
+
+instruction-set-supported =
   armv7-a
   armv7-r
   armv8-a
   armv8-r
   ;
 
+# @todo until all instruction-set supported in Boost.Build
+for t in $(instruction-set-supported)
+{
+  local instruction-set-values = [ feature.values <instruction-set> ] ;
+  if ! $(t) in $(instruction-set-values)
+  {
+    feature.extend instruction-set : $(t) ;
+  }
+}
+
+processor-supported =
+  microblaze
+  cortex-a9
+  cortex-a53
+  cortex-r5
+  ;
+
 # @todo this should be part of boost.build
-# @todo this depends on what the hdf supports too
 feature.feature processor
   : # values
-    cortex-a9
-    cortex-a53
-    cortex-r5
+    $(processor-supported)
   : # attributes
     propagated optional
   ;
@@ -105,7 +145,7 @@ rule init ( version ? : command * : options * )
     }
 
     root = [ common.get-absolute-tool-path $(command[-1]) ] ;
-    root = $(root:P) ;
+    root = [ path.make $(root:D) ] ;
 
     if $(.debug-configuration)
     {
@@ -138,6 +178,9 @@ class ws-generator : generator
 
   rule run ( project name ? : property-set : sources * )
   {
+    # @todo cannot call from here
+    # check-properties [ $(property-set).raw ] ;
+
     local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
     local ps ;
@@ -245,6 +288,9 @@ class ws-generator : generator
 
   rule generated-targets ( sources + : property-set : project name ? )
   {
+    # @todo cannot call from here
+    # check-properties [ $(property-set).raw ] ;
+
     local source = $(sources[0]) ;
 
     if ! $(name)
@@ -278,8 +324,8 @@ class ws-generator : generator
 
     t = [ class.new file-target $(ws)/hw/psu_init : H : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-###    t = [ class.new file-target $(ws)/hw/psu_init : C : $(project) : $(a)  ] ;
-###    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ class.new file-target $(ws)/hw/psu_init : C : $(project) : $(a)  ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
     t = [ class.new file-target $(ws)/hw/psu_init_gpl : H : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
     # @todo this duplicates whats in psu_init for some reason, which one is the right one?
@@ -374,6 +420,8 @@ rule generate-build-and-run ( targets + : sources + : properties * )
 
 rule generate-build ( targets + : sources + : properties * )
 {
+  check-properties $(properties) ;
+
   echo generate-build $(targets) " : " $(sources) " : " $(properties) " ;" ;
 
   local target = $(targets[1]) ;
@@ -467,6 +515,8 @@ rule generate-build ( targets + : sources + : properties * )
 
 rule generate-run ( targets + : sources + : properties * )
 {
+  check-properties $(properties) ;
+
   echo generate-run $(targets) " : " $(sources) " : " $(properties) " ;" ;
 
   local target = $(targets[1]) ;
@@ -597,4 +647,28 @@ actions run-xsct
 # @todo do nothing
 rule ws-generator ( targets + : sources + : properties * )
 {
+  check-properties $(properties) ;
+}
+
+# Check that the given properties are supported by this module and
+# report an error if not.
+#
+local rule check-properties ( properties * )
+{
+  check-feature-supported target-os : $(properties) ;
+  check-feature-supported architecture : $(properties) ;
+  check-feature-supported instruction-set : $(properties) ;
+  check-feature-supported processor : $(properties) ;
+}
+
+# Check that the given properties are supported by this module for
+# feature <name> and report an error if not.
+#
+local rule check-feature-supported ( name : properties * )
+{
+  local f = [ feature.get-values <$(name)> : $(properties) ] ;
+  if ! $(f) in $($(name)-supported)
+  {
+    errors.user-error '$(f)' "is not a supported value of <$(name)>, supported values are [" '$(target-os-supported)' "]" ;
+  }
 }

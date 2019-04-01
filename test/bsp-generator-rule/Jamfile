@@ -1,10 +1,19 @@
 import ../../xsdk ;
 
+local xsdk-root = [ xsdk.root ] ;
+
 xsdkws ws
   : # sources
-    /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
-    # ../example.hdf
+    $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf
   : # requirements
+    <target-os>elf
+
+    <link>static
+
+    <architecture>arm
+    <instruction-set>armv8-a
+    <processor>cortex-a53
+
     # @todo just use <library>
     #<xsdk-configuration>"-lib xil a b"
 
@@ -17,6 +26,8 @@ xsdkws ws
     # @todo do more configuration to check everything
     #<xsdk-configuration>"sleep_timer psu_ttc_3"
     #<xsdk-configuration>"XXX YYY"
+  : # default-build
+  : # usage-requirements
   : # default-build
   : # usage-requirements
   ;

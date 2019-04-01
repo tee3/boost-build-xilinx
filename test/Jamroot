@@ -1,15 +1,3 @@
-# @todo ensure xsdk fails if not support properties
-project
-  : default-build
-    <toolset>gcc
-
-    <target-os>elf
-
-    <processor>cortex-r5
-
-    <link>static
-  ;
-
 build-project configure ;
 
 build-project hw-generator ;

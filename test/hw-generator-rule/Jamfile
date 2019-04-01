@@ -1,14 +1,25 @@
 import ../../xsdk ;
 
-xsdkws tmpws
+local xsdk-root = [ xsdk.root ] ;
+
+xsdkws ws
   : # sources
-    /home/tom/Development/radar/fpga-builds/v34-0101/ar_sensor_fpga.hdf
-    # ../example.hdf
+    $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf
+  : # requirements
+    <target-os>elf
+
+    <link>static
+
+    <architecture>arm
+    <instruction-set>armv8-a
+    <processor>cortex-a53
+  : # default-build
+  : # usage-requirements
   ;
 
 exe example
   : # sources
     ../example.cpp
 
-    tmpws
+    ws
   ;
