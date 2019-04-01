@@ -14,52 +14,68 @@ Rationale
 Boost.Build will create a single workspace for all XSDK components
 within a project.
 
-This project will add several target types.
+Requirements
+------------
 
-``xsdkhw``
+* Xilinx XSDK 2018.3 (or later)
+* Boost.Build from Boost C++ Libraries 1.68.0 (or later)
 
-   Generate a hardware definitions from an ``.hdf`` file.
+Example
+-------
 
-   This will run the following ``xsct`` commands to generate a
-   hardware definition named ``example-hw`` from a hardware
-   specification named ``example.hdf``.
+The following is an example where a XSDK workspace named ``ws`` is
+created from a hardware specification in ``example.hdf`` and used,
+along with a C++ source file named ``example.cpp`` to create an
+application named ``example``.
 
-   .. code:: tcl
+The conditional ``toolset`` in the requirements of ``example`` are
+required since the ``toolset`` feature cannot set in
+``usage-requirements``.
 
-      createhw -name example-hw -hwspec example.hdf
+.. code::
 
-``xsdkbsp``
+  import xsdk ;
 
-   Generate a board-support package given an ``xsdkhw``
-   and free-form configuration options.  This will also print a file
-   with all configuration options.
+  xsdkws ws
+    : # sources
+       example.hdf
+    : # requirements
+      <variant>release
 
-   This will run the following ``xsct`` commands to generate a
-   board-support package named ``example-bsp`` from a hardware
-   definition named ``example-hw`` for Boost.Build features such as
-   ``architecture`` and ``target-os``.
+      <xsdk-configuration>"sleep_time psu_ttc_3"
+      <xsdk-configuration>"-proc a b"
+      <xsdk-configuration>"-os c d"
+      <xsdk-configuration>"-lib libx e f"
+    : # default-build
+    : # usage-requirements
+    ;
 
-   .. code::
+  exe example
+    : # sources
+      example.cpp
 
-      # @todo note that architecture and target-os must be translated
-      createbsp -name example-bsp -proc $(architecture) -hwproject example-hw -os $(target-os)
+      ws
+    : # requirements
+      <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+      <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
+    : # default-build
+    : # usage-requirements
+    ;
 
-      # @todo and whatever else are added
-      configbsp -bsp example-bsp sleep_timer psu_ttc_3
+Reference
+---------
 
-      updatemss -mss  $(ws)/example-bsp/system.mss
-      regenbsp -bsp example-bsp
+Xilinx FPGA
+~~~~~~~~~~~
 
-      projects -build -type bsp -name example-bsp
+* Zynq UltraScale+ MPSoC
+* Zynq 7000 SoC
 
-Boost.Build will generally configure the board-support package given
-Boost.Build features.  These features can be overridden using the
-following toolset flags.
+Toolsets
+~~~~~~~~
 
-``xsdk-configuration``
-
-   This feature provides information for configuring a board-support
-   package.
+This module supports the processor-specific ``gcc`` toolsets delivered
+within the Xilinx XSDK.
 
 Target Operating Systems
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,7 +89,7 @@ Target Operating Systems
 
    @todo need a version
 
-``xilsystem``
+``xilkernel``
 
    The minimal Xilinx operating system.
 
@@ -85,51 +101,126 @@ Target Operating Systems
 
    @todo need a version
 
-Example
--------
+Architectures
+~~~~~~~~~~~~~
 
-The goal is to able to do something like the following.
+* ARM (``arm``)
+* Microblaze (``microblaze``)
 
-.. code::
+Instruction Sets
+~~~~~~~~~~~~~~~~
 
-  import xsdk ;
+* ``microblaze``
+* ``armv7-a``
+* ``armv7-r``
+* ``armv8-a``
 
-  # @todo require a concept of workspace ... i think everything should go into a single workspace ...
+Processors
+~~~~~~~~~~
 
-  xsdkhw example-hw
-    : # sources
-       example.hdf
-    : # requirements
-    : # default-build
-    : # usage-requirements
-    ;
+@todo support more processors
 
-  xsdkbsp example-bsp
-    : # sources
-       example-hw
-    : # requirements
-      <variant>release
+* ``cortex-a9``
+* ``cortex-a53``
+* ``cortex-r5``
 
-      <xsdk-configuration>"sleep_time psu_ttc_3"
-      <xsdk-configuration>"-proc a b"
-      <xsdk-configuration>"-os c d"
-      <xsdk-configuration>"-lib libx e f"
-    : # default-build
-    : # usage-requirements
-    ;
+Main Target
+~~~~~~~~~~~
 
-  exe example-app
-    : # sources
-      main.cpp
+This project will add one main target type.
 
-      example-bsp
-    : # requirements
-    : # default-build
-    : # usage-requirements
-    ;
+``xsdkbsp ( name : source : requirements * : default-build * : usage-requirements )``
+
+   This will place an application named ``app``, a board-support
+   packaged named ``bsp``, and a hardware definition named ``hw``
+   within a workspace named as defined in the rule, ``$(name)``, and
+   provide ``usage-requirements`` to users of the named target.
+
+   This will eventually run a script using ``xsct`` commands with
+   values translated from Boost.Build features such as
+   ``<architecture>``, ``instruction-set``, ``target-os``, and
+   others.  Some representative examples of those ``xsct`` commands
+   are below.
+
+   Create the workspace (``$(build-dir)/$(name).xsdkws``) from the properties.
+
+   .. code:: tcl
+
+      setws $(build-dir)/$(name).xsdkws
+
+
+   Generate the hardware definition (``hw``) from the hardware
+   definition file specified in ``$(source)``.
+
+   .. code:: tcl
+
+      createhw -name hw -hwspec $(source:G=)
+
+   Generate a board-support package (``bsp``) from the hardware
+   definition (``hw``), standard Boost.Build features, and free-form
+   configuration options.
+
+   .. code::
+
+      createbsp -name bsp -proc $(xsdk-processor) -hwproject hw -os $(xsdk-os-name)
+
+      configbsp -bsp bsp sleep_timer psu_ttc_3
+
+      updatemss -mss  $ws/bsp/system.mss
+      regenbsp -bsp bsp
+
+      projects -build -type bsp -name bsp
+
+   Generate an application (``app``) which provides a linker-command
+   file and some options required to properly build an application.
+
+   .. code::
+
+      createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(xsdk-processor)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os-name)
+
+XSDK-related Properties
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Boost.Build will generally configure the board-support package given
+Boost.Build features.  These features can be overridden using the
+following toolset flags.
+
+``xsdk-template``
+
+   This feature indicates the application template used to generate
+   the application.  The resulting main program can be used to create
+   or update the actual application code.
+
+   This defaults to an empty application.
+
+``xsdk-language`` - ``c``, ``c++``
+
+   This feature indicates the programming language, C or C++, that
+   the workspace is to be used with.
+
+   This defaults to C++.
+
+``xsdk-configuration``
+
+   This feature provides information for configuring a board-support
+   package.
+
+``xsdk-library``
+
+   This feature adds Xilinx libraries to the board-support package.
+
+``xsdk-processor-id``
+
+   This feature indicates which processor on the Xilinx FPGA is
+   targeted.
+
+   This defaults to 0.
 
 Testing
 -------
+
+There are several test projects in the ``test`` directory.  These can
+be run by running the following command.
 
 .. code::
 
