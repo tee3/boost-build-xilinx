@@ -1,3 +1,5 @@
 build-project configure ;
 
 build-project zcu102 ;
+build-project zcu102-hello ;
+build-project zcu102-rpc-demo ;

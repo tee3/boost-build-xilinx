@@ -86,10 +86,10 @@ feature.feature processor
     propagated optional
   ;
 
-feature.feature xsdk-template : "" : link-incompatible ;
-feature.set-default xsdk-template : "" ;
+feature.feature xsdk-template : : free ;
 feature.feature xsdk-language : c c++ : propagated link-incompatible ;
-feature.set-default xsdk-language : c++ ;
+# @todo c++ is not that useful and reduces app templates available
+feature.set-default xsdk-language : c ;
 feature.feature xsdk-configuration : : optional free link-incompatible ;
 feature.feature xsdk-library : : optional free ;
 feature.feature xsdk-processor-id : 0 1 2 3 : propagated link-incompatible ;
@@ -365,7 +365,13 @@ class ws-generator : generator
     }
     for local l in [ $(property-set).get <xsdk-library> ]
     {
-      t = [ class.new searched-lib-target $(l) : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(xsdk-processor-id)/lib : $(a) ] ;
+      local translated-l = $(l) ;
+      switch $(l)
+      {
+        case libmetal : translated-l = metal ;
+        case openamp : translated-l = open_amp ;
+      }
+      t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(xsdk-processor-id)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
@@ -460,7 +466,7 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
-  xsdk-template ?= "" ;
+  xsdk-template ?= "Empty Application" ;
 
   local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
@@ -535,28 +541,9 @@ rule generate-run ( targets + : sources + : properties * )
 
   local fpga-name = $(hdf-source:B) ;
 
-  local shared ;
-  if <link>shared in $(properties)
-  {
-    shared = true ;
-  }
-
+  # @todo use these below to configure
   local processor = [ feature.get-values <processor> : $(properties) ] ;
   local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
-  local target-os = [ feature.get-values <target-os> : $(properties) ] ;
-
-  local xsdk-os-name ;
-  switch $(target-os)
-  {
-    case elf : xsdk-os-name = standalone ;
-    case freertos : xsdk-os-name = freertos10_xilinx ;
-    case xilkernel : xsdk-os-name = xilkernel ;
-  }
-
-  local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
-  xsdk-template ?= "" ;
-
-  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
   local lines ;
 
