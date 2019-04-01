@@ -14,7 +14,6 @@ if {! [file exists $ws]} {
 setws $ws
 
 puts "[getos -bsp bsp]"
-puts "[configbsp -bsp bsp -os]"
 set os_parameters [list]
 foreach line [lrange [split [configbsp -bsp bsp -os] "\n"] 3 end] {
     if {[scan $line "%s%s" name value] != 2} then {
@@ -25,21 +24,37 @@ foreach line [lrange [split [configbsp -bsp bsp -os] "\n"] 3 end] {
 }
 puts "os_parameters: $os_parameters"
 set archiver [configbsp -bsp bsp archiver]
-puts "$archiver"
-set compiler [configbsp -bsp bsp compiler]
-puts "$compiler"
-set compiler_flags [configbsp -bsp bsp compiler-flags]
-puts "$compiler_flags"
-set extra_compiler_flags [configbsp -bsp bsp extra-compiler-flags]
-puts "$extra_compiler_flags"
-set processor [configbsp -bsp bsp -proc]
-puts "$processor"
+set processor_parameters [list]
+foreach line [lrange [split [configbsp -bsp bsp -proc] "\n"] 3 end] {
+    if {[scan $line "%s%s" name value] != 2} then {
+        continue
+    }
+    lappend processor_parameters $name
+}
+puts "processor_parameters: $processor_parameters"
+foreach p $processor_parameters {
+    set value [configbsp -bsp bsp $p]
+    puts "$p: $value"
+}
+set libraries [list]
 foreach line [lrange [split [getlibs -bsp bsp] "\n"] 3 end] {
     if {[scan $line "%s%s" name version] != 2} then {
         continue
     }
 
-    puts "library $name:"
-    puts "[configbsp -bsp bsp -lib $name]"
+    lappend libraries $name
 }
+foreach library $libraries {
+    set parameters [list]
+    foreach line [lrange [split [configbsp -bsp bsp -lib $library] "\n"] 3 end] {
+        if {[scan $line "%s%s" name value] != 2} then {
+            continue
+        }
+
+        lappend parameters $name
+    }
+
+    puts "library $library parameters: $parameters"
+}
+
 puts "[getdrivers -bsp bsp]"
