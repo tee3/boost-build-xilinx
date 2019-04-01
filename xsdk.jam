@@ -94,6 +94,9 @@ feature.feature processor
 feature.feature processor-id : : optional free link-incompatible ;
 
 feature.feature xsdk-template : : free ;
+feature.feature xsdk-language : c c++ : propagated link-incompatible ;
+# @todo c++ is not that useful and reduces app templates available
+feature.set-default xsdk-language : c ;
 feature.feature xsdk-configuration : : optional free link-incompatible ;
 feature.feature xsdk-library : : optional free ;
 
@@ -379,6 +382,7 @@ generators.register [ class.new ws-generator xsdk.ws-generator : XSCTRUN : XSDKW
 # @todo these magically result in XSDKWS being dependent on the right stuff
 toolset.flags xsdk.generate-build-and-run XSDK_CONFIGURATIONS <xsdk-configuration> ;
 toolset.flags xsdk.generate-build-and-run XSDK_TEMPLATE <xsdk-template> ;
+toolset.flags xsdk.generate-build-and-run XSDK_LANGUAGE <xsdk-language> ;
 toolset.flags xsdk.generate-build-and-run XSDK_LIBRARIES <xsdk-library> ;
 toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os> ;
 toolset.flags xsdk.generate-build-and-run XSDK_PROC <processor> ;
@@ -426,6 +430,8 @@ rule generate-build ( targets + : sources + : properties * )
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
   xsdk-template ?= "Empty Application" ;
 
+  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
+
   local lines ;
 
   # @todo check for errors
@@ -467,7 +473,7 @@ rule generate-build ( targets + : sources + : properties * )
 
   # create a dummy application for the linker file
   # @todo check for errors
-  lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
+  lines += "createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(xsdk-processor)_$(processor-id) -hwproject hw -os $(xsdk-os-name)" ;
 
   # build the bsp (but not the application)
   # @todo check for errors
