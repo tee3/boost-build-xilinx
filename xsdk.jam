@@ -456,6 +456,7 @@ rule generate-build ( targets + : sources + : properties * )
   {
     case elf : xsdk-os-name = standalone ;
     case freertos : xsdk-os-name = freertos10_xilinx ;
+    case xilkernel : xsdk-os-name = xilkernel ;
   }
 
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
@@ -549,6 +550,7 @@ rule generate-run ( targets + : sources + : properties * )
   {
     case elf : xsdk-os-name = standalone ;
     case freertos : xsdk-os-name = freertos10_xilinx ;
+    case xilkernel : xsdk-os-name = xilkernel ;
   }
 
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
@@ -661,9 +663,16 @@ rule ws-generator ( targets + : sources + : properties * )
 #
 local rule check-properties ( properties * )
 {
+  if ! [ feature.get-values <target-os> : $(properties) ]
+  {
+    errors.user-error "<target-os> is empty, support values are [" '$(target-os-supported)' "]" ;
+  }
+  if ! [ feature.get-values <processor> : $(properties) ]
+  {
+    errors.user-error "<processor> is empty, support values are [" '$(processor-supported)' "]" ;
+  }
+
   check-feature-supported target-os : $(properties) ;
-  check-feature-supported architecture : $(properties) ;
-  check-feature-supported instruction-set : $(properties) ;
   check-feature-supported processor : $(properties) ;
 }
 
@@ -675,6 +684,6 @@ local rule check-feature-supported ( name : properties * )
   local f = [ feature.get-values <$(name)> : $(properties) ] ;
   if ! $(f) in $($(name)-supported)
   {
-    errors.user-error '$(f)' "is not a supported value of <$(name)>, supported values are [" '$(target-os-supported)' "]" ;
+    errors.user-error '$(f)' "is not a supported value of <$(name)>, supported values are [" '$($(name)-supported)' "]" ;
   }
 }

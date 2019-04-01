@@ -5,52 +5,70 @@ local xsdk-root = [ xsdk.root ] ;
 local hdf = $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
 
 local variant-desired = debug release ;
-local target-os-desired = elf freertos xilkernel ;
+# @todo xilkernel is not exactly supported by XSDK
+# local target-os-desired = elf freertos xilkernel ;
+local target-os-desired = elf freertos ;
 local processor-desired = cortex-a53 cortex-r5 ;
 
-# @todo add more configurations
-xsdkws elf-ws
-  : # sources
-    $(hdf)
-  : # requirements
-    <target-os>elf
+for local processor in $(processor-desired)
+{
+  if elf in $(target-os-desired)
+  {
+    # @todo add more configurations
+    xsdkws elf-$(processor)-ws
+      : # sources
+        $(hdf)
+      : # requirements
+        <target-os>elf
 
-    <link>static
+        <link>static
 
-    <xsdk-library>xilffs
+        <processor>$(processor)
 
-    <xsdk-configuration>"sleep_timer psu_ttc_3"
-  : # default-build
-  : # usage-requirements
-  ;
+        <xsdk-library>xilffs
 
-# @todo add more configurations
-xsdkws freertos-ws
-  : # sources
-    $(hdf)
-  : # requirements
-    <target-os>freertos
+        <xsdk-configuration>"sleep_timer psu_ttc_3"
+      : # default-build
+      : # usage-requirements
+      ;
+  }
 
-    <link>static
+  if freertos in $(target-os-desired)
+  {
+    # @todo add more configurations
+    xsdkws freertos-$(processor)-ws
+      : # sources
+        $(hdf)
+      : # requirements
+        <target-os>freertos
 
-    <xsdk-library>xilffs
-  : # default-build
-  : # usage-requirements
-  ;
+        <link>static
 
-# @todo add more configurations
-xsdkws xilkernel-ws
-  : # sources
-    $(hdf)
-  : # requirements
-    <target-os>xilkernel
+        <processor>$(processor)
 
-    <link>static
+        <xsdk-library>xilffs
+      : # default-build
+      : # usage-requirements
+      ;
+  }
 
-    <xsdk-library>xilffs
-  : # default-build
-  : # usage-requirements
-  ;
+  if xilkernel in $(target-os-desired)
+  {
+    # @todo add more configurations
+    xsdkws xilkernel-$(processor)-ws
+      : # sources
+        $(hdf)
+      : # requirements
+        <target-os>xilkernel
+
+        <link>static
+
+        <processor>$(processor)
+      : # default-build
+      : # usage-requirements
+      ;
+   }
+}
 
 for local variant in $(variant-desired)
 {
@@ -62,11 +80,13 @@ for local variant in $(variant-desired)
         : # sources
           ../example.cpp
 
-          $(target-os)-ws
+          $(target-os)-$(processor)-ws
         : # requirements
           <variant>$(variant)
 
           <target-os>$(target-os)
+
+          <link>static
 
           <processor>$(processor)
 
