@@ -25,7 +25,7 @@ xsdkws ws
 
 exe example
   : # sources
-    main.cpp
+    rpc-demo.cpp
 
     ws
   : # requirements
