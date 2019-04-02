@@ -177,34 +177,12 @@ class build-and-run-generator : generator
     }
     ps = [ $(ps).add-raw <xsdk-instruction-set>$(xsdk-instruction-set) ] ;
 
-    ps = [ $(ps).add-raw <relevant>target-os ] ;
-    ps = [ $(ps).add-raw <relevant>link ] ;
-    ps = [ $(ps).add-raw <relevant>optimization ] ;
-    ps = [ $(ps).add-raw <relevant>instruction-set ] ;
-    ps = [ $(ps).add-raw <relevant>xsdk-processor-id ] ;
-
-    # ps = [ $(ps).add-raw <relevant>toolset ] ;
-    ps = [ $(ps).add-raw <relevant>include ] ;
-    ps = [ $(ps).add-raw <relevant>define ] ;
-    ps = [ $(ps).add-raw <relevant>cflags ] ;
-    ps = [ $(ps).add-raw <relevant>linkflags ] ;
-    ps = [ $(ps).add-raw <relevant>library ] ;
-
     # add generated properties to this target
     property-set = [ $(property-set).add $(ps) ] ;
 
     r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
-    if [ class.is-a $(r[1]) : property-set ]
-    {
-      r = [ $(r[1]).add $(ps) ] $(r[2-]) ;
-    }
-    else
-    {
-      r = $(ps) $(r) ;
-    }
-
-    return $(r) ;
+    return [ generators.add-usage-requirements $(r) : [ $(ps).raw ] ] ;
   }
 
   rule generated-targets ( sources + : property-set : project name ? )
@@ -259,6 +237,10 @@ class ws-generator : generator
 
   rule run ( project name ? : property-set : sources * )
   {
+    property-set = [ $(property-set).add-raw <relevant>toolset ] ;
+    property-set = [ $(property-set).add-raw <relevant>target-os ] ;
+    property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
+
     local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
     local ps ;
@@ -283,20 +265,6 @@ class ws-generator : generator
 
       ws-dir = $(p)/$(n) ;
     }
-
-    ps = [ $(ps).add-raw <relevant>target-os ] ;
-    ps = [ $(ps).add-raw <relevant>variant ] ;
-    ps = [ $(ps).add-raw <relevant>link ] ;
-    ps = [ $(ps).add-raw <relevant>optimization ] ;
-    ps = [ $(ps).add-raw <relevant>instruction-set ] ;
-    ps = [ $(ps).add-raw <relevant>xsdk-processor-id ] ;
-
-    # ps = [ $(ps).add-raw <relevant>toolset ] ;
-    ps = [ $(ps).add-raw <relevant>include ] ;
-    ps = [ $(ps).add-raw <relevant>define ] ;
-    ps = [ $(ps).add-raw <relevant>cflags ] ;
-    ps = [ $(ps).add-raw <relevant>linkflags ] ;
-    ps = [ $(ps).add-raw <relevant>library ] ;
 
     # add properties from createhw
 
