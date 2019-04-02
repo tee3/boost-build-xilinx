@@ -11,10 +11,6 @@ xsdkws ws
   : # requirements
     <target-os>freertos
 
-    <link>static
-
-    <instruction-set>cortex-r5
-
     <xsdk-template>"FreeRTOS Hello World"
   : # default-build
   : # usage-requirements
@@ -27,10 +23,6 @@ exe example
     ws
   : # requirements
     <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5
 
     <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
     <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
