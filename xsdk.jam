@@ -13,20 +13,28 @@ import feature ;
 import type ;
 import "class" ;
 import generators ;
+import property-set ;
 
 if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 {
   .debug-configuration = true ;
 }
 
-target-os-supported =
-  elf
-  freertos
-  xilkernel
+feature.feature xsdk-template : : free ;
+feature.feature xsdk-configuration : : optional free link-incompatible ;
+feature.feature xsdk-library : : optional free ;
+
+feature.feature xsdk-os
+  : # values
+    standalone
+    freertos10_xilinx
+    xilkernel
+  : # attributes
+    propagated optional
   ;
 
 # @todo until all target-os supported in Boost.Build
-for local t in $(target-os-supported)
+for local t in freertos xilkernel
 {
   local target-os-values = [ feature.values <target-os> ] ;
   if ! $(t) in $(target-os-values)
@@ -35,67 +43,27 @@ for local t in $(target-os-supported)
   }
 }
 
-architecture-supported =
-  arm
-  microblaze
-  ;
-
-# @todo until all architecture supported in Boost.Build
-for local t in $(architecture-supported)
-{
-  local architecture-values = [ feature.values <architecture> ] ;
-  if ! $(t) in $(architecture-values)
-  {
-    feature.extend architecture : $(t) ;
-  }
-}
-
-instruction-set-supported =
-  # arm
-  armv7-a
-  armv7-r
-  armv8-a
-  armv8-r
-
-  # microblaze
-  mb-v6.00.a
-  mb-v6.00.b
-  ;
-
-# @todo until all instruction-set supported in Boost.Build
-for local t in $(instruction-set-supported)
-{
-  local instruction-set-values = [ feature.values <instruction-set> ] ;
-  if ! $(t) in $(instruction-set-values)
-  {
-    feature.extend instruction-set : $(t) ;
-  }
-}
-
-processor-supported =
-  # arm
-  cortex-a9
-  cortex-a53
-  cortex-r5
-
-  # microblaze
-  mb-v6.00.a
-  mb-v6.00.b
+feature.feature xsdk-processor
+  : # values
+    # arm
+    cortexa9
+    cortexa53
+    cortexr5
+  : # attributes
+    propagated optional
   ;
 
 # @todo this should be part of boost.build
 feature.feature processor
   : # values
-    $(processor-supported)
+    cortex-a9
+    cortex-a53
+    cortex-r5
   : # attributes
     propagated optional
   ;
 
 feature.feature processor-id : : optional free link-incompatible ;
-
-feature.feature xsdk-template : : free ;
-feature.feature xsdk-configuration : : optional free link-incompatible ;
-feature.feature xsdk-library : : optional free ;
 
 type.register XSCT : xsct ;
 
@@ -178,8 +146,11 @@ rule root ( )
   return $(root) ;
 }
 
-class ws-generator : generator
+class build-and-run-generator : generator
 {
+  import errors ;
+  import assert ;
+
   rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
   {
     generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
@@ -187,9 +158,93 @@ class ws-generator : generator
 
   rule run ( project name ? : property-set : sources * )
   {
-    # @todo cannot call from here
-    # check-properties [ $(property-set).raw ] ;
+    assert.equal [ sequence.length $(sources) ] : 1 ;
 
+    local ps = [ property-set.empty ] ;
+
+    local xsdk-os = [ target-os-to-xsdk [ $(property-set).get <target-os> ] ] ;
+    if ! $(xsdk-os)
+    {
+      errors.user-error "unsupported <target-os> " [ $(property-set).get <target-os> ] ;
+    }
+    ps = [ $(ps).add-raw <xsdk-os>$(xsdk-os) ] ;
+
+    local xsdk-processor = [ processor-to-xsdk [ $(property-set).get <processor> ] ] ;
+    if ! $(xsdk-processor)
+    {
+      errors.user-error "unsupported <processor> " [ $(property-set).get <processor> ] ;
+    }
+    ps = [ $(ps).add-raw <xsdk-processor>$(xsdk-processor) ] ;
+
+    # add generated properties to this target
+    property-set = [ $(property-set).add $(ps) ] ;
+
+    r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
+
+    if [ class.is-a $(r[1]) : property-set ]
+    {
+      r = [ $(r[1]).add $(ps) ] $(r[2-]) ;
+    }
+    else
+    {
+      r = $(ps) $(r) ;
+    }
+
+    return $(r) ;
+  }
+
+  rule generated-targets ( sources + : property-set : project name ? )
+  {
+    return [ generator.generated-targets $(sources) : $(property-set) : $(project) $(name) ] ;
+  }
+
+  rule target-os-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <target-os> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case elf : tmp = standalone ;
+      case freertos : tmp = freertos10_xilinx ;
+      case xilkernel : tmp = xilkernel ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  rule processor-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <processor> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-a9 : tmp = cortexa9 ;
+      case cortex-a53 : tmp = cortexa53 ;
+      case cortex-r5 : tmp = cortexr5 ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+}
+
+class ws-generator : generator
+{
+  import errors ;
+  import assert ;
+
+  rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
+  {
+    generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
+  }
+
+  rule run ( project name ? : property-set : sources * )
+  {
     local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
     local ps ;
@@ -205,40 +260,32 @@ class ws-generator : generator
       vts = $(r) ;
     }
 
+    assert.equal [ $(vts[1]).type ] : XSDKWS ;
+
     local ws-dir ;
-
-    for local vt in $(vts)
     {
-      if [ $(vt).type ] = XSDKWS
-      {
-        local p = [ $(vt).path ] ;
-        local n = [ $(vt).name ] ;
+      local p = [ $(vts[1]).path ] ;
+      local n = [ $(vts[1]).name ] ;
 
-        ws-dir = $(p)/$(n) ;
-      }
+      ws-dir = $(p)/$(n) ;
     }
-
-    local properties = [ $(ps).raw ] ;
 
     # add properties from createhw
 
-    properties += <include>$(ws-dir)/hw ;
+    ps = [ $(ps).add-raw <include>$(ws-dir)/hw ] ;
 
     local processor = [ $(property-set).get <processor> ] ;
-    local instruction-set = [ $(property-set).get <instruction-set> ] ;
-    local architecture = [ $(property-set).get <architecture> ] ;
 
     # @todo this cannot work due to toolset and usage-requirement
     # toolset = [ processor-to-toolset $(processor) ] ;
-    # properties += <toolset>$(toolset) ;
+    # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
 
     # @todo these should be done in gcc.jam really
     # @todo support specific processors better
-    properties += <cflags>-march=$(instruction-set) ;
-    properties += <cflags>-mtune=$(processor) ;
+    ps = [ $(ps).add-raw <cflags>-mtune=$(processor) ] ;
     switch $(processor)
     {
-      case cortex-r5 : properties += <cflags>-mfpu=vfpv3-d16 ;
+      case cortex-r5 : ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
     }
 
     # add properties from createbsp
@@ -249,44 +296,45 @@ class ws-generator : generator
       {
         local s = [ $(vt).search ] ;
 
-        properties += <include>$(s:D)/include ;
+        ps = [ $(ps).add-raw <include>$(s:D)/include ] ;
       }
     }
 
     # add properties from createapp
 
-    # @todo cannot call from here
-    # local defines = [ processor-to-defines $(processor) ] ;
-    local defines ;
-    switch $(processor)
-    {
-      case cortex-r5 : defines += ARMR5 ;
-    }
+    local defines = [ processor-to-defines $(processor) ] ;
 
-    properties += <define>$(defines) ;
+    ps = [ $(ps).add-raw <define>$(defines) ] ;
 
-    properties += <linkflags>"-T $(ws-dir)/app/src/lscript.ld" ;
-
-    ps = [ property-set.create $(properties) ] ;
+    ps = [ $(ps).add-raw <linkflags>"-T $(ws-dir)/app/src/lscript.ld" ] ;
 
     return $(ps) $(vts) ;
   }
 
   rule generated-targets ( sources + : property-set : project name ? )
   {
-    # @todo cannot call from here
-    # check-properties [ $(property-set).raw ] ;
-
-    local source = $(sources[0]) ;
+    assert.equal [ sequence.length $(sources) ] : 1 ;
 
     if ! $(name)
     {
-      name = [ generator.determine-output-name $(source) ] ;
+      name = [ generator.determine-output-name $(sources[1]) ] ;
     }
+
+    local shared ;
+    if [ $(property-set).get <link> ] = shared
+    {
+      shared = true ;
+    }
+
+    local xsdk-processor = [ $(property-set).get <xsdk-processor> ] ;
+    local processor-id = [ $(property-set).get <processor-id> ] ;
+    processor-id ?= 0 ;
+
+    assert.variable-not-empty xsdk-processor ;
 
     local virtual-targets ;
 
-    local a = [ class.new action $(source) : xsdk.ws-generator : $(property-set) ] ;
+    local a = [ class.new action $(sources) : xsdk.generate-ws : $(property-set) ] ;
 
     local t ;
 
@@ -295,6 +343,10 @@ class ws-generator : generator
 
     local build-dir = [ $(t).path ] ;
     local ws = [ $(t).name ] ;
+
+    local bsp-dir = $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(processor-id) ;
+
+    assert.variable-not-empty bsp-dir ;
 
     # targets generated by createhw
 
@@ -323,68 +375,80 @@ class ws-generator : generator
     t = [ class.new file-target $(ws)/bsp/system : MSS : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    local properties = [ $(property-set).raw ] ;
-
-    local shared ;
-    if <link>shared in $(properties)
-    {
-      shared = true ;
-    }
-
-    local processor = [ feature.get-values <processor> : $(properties) ] ;
-    # @todo this cannot be called from here
-    # local xsdk-processor = [ processor-to-xsdk $(processor) ] ;
-    local xsdk-processor ;
-    switch $(processor)
-    {
-      case cortex-a9 : xsdk-processor = cortexa9 ;
-      case cortex-a53 : xsdk-processor = cortexa53 ;
-      case cortex-r5 : xsdk-processor = cortexr5 ;
-    }
-    local processor-id = [ feature.get-values <processor-id> : $(properties) ] ;
-    processor-id ?= 0 ;
-
-    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(processor-id)/lib : $(a) ] ;
+    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    if <target-os>freertos in $(properties)
+    if [ $(property-set).get <freertos> ] = freertos
     {
-      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(processor-id)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
     for local l in [ $(property-set).get <xsdk-library> ]
     {
-      # @todo cannot be called from here
-      # local translated-l = [ xsdk-library-to-library $(l) ] ;
-      local translated-l = $(l) ;
-      switch $(translated-l)
-      {
-        case libmetal : translated-l = metal ;
-        case openamp : translated-l = open_amp ;
-      }
+      local translated-l = [ xsdk-library-to-library $(l) ] ;
 
-      t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(processor-id)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
     return $(virtual-targets) ;
   }
+
+  rule processor-to-defines ( value )
+  {
+    assert.in $(value) : [ feature.values <processor> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-r5 : tmp += ARMR5 ;
+    }
+
+    return $(tmp) ;
+  }
+
+  rule processor-to-toolset ( value )
+  {
+    assert.in $(value) : [ feature.values <processor> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-r5 : tmp = gcc-7xilinxarmr5 ;
+      case cortex-a53 : tmp = gcc-7xilinxaarch64 ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  rule xsdk-library-to-library ( value )
+  {
+    local tmp = $(value) ;
+    switch $(tmp)
+    {
+      case libmetal : tmp = metal ;
+      case openamp : tmp = open_amp ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
 }
 
-generators.register-standard xsdk.generate-build-and-run : HDF : XSCT TCL(%-run) ;
+generators.register [ class.new build-and-run-generator xsdk.generate-build-and-run : HDF : XSCT TCL(%-run) ] ;
 generators.register-standard xsdk.run-xsct : XSCT : XSCTRUN ;
-generators.register [ class.new ws-generator xsdk.ws-generator : XSCTRUN : XSDKWS BIT H C TCL MSS LIB ] ;
+generators.register [ class.new ws-generator xsdk.generate-ws : XSCTRUN : XSDKWS BIT H C TCL MSS LIB ] ;
 
 # @todo these magically result in XSDKWS being dependent on the right stuff
-toolset.flags xsdk.generate-build-and-run XSDK_CONFIGURATIONS <xsdk-configuration> ;
-toolset.flags xsdk.generate-build-and-run XSDK_TEMPLATE <xsdk-template> ;
-toolset.flags xsdk.generate-build-and-run XSDK_LIBRARIES <xsdk-library> ;
-toolset.flags xsdk.generate-build-and-run XSDK_OS <target-os> ;
-toolset.flags xsdk.generate-build-and-run XSDK_PROC <processor> ;
-toolset.flags xsdk.generate-build-and-run XSDK_PROC_ID <processor-id> ;
+toolset.flags xsdk.generate-build-and-run XSDK_TARGET_OS <target-os> ;
 toolset.flags xsdk.generate-build-and-run XSDK_LINK <link> ;
 toolset.flags xsdk.generate-build-and-run XSDK_LINK <optimization> ;
+toolset.flags xsdk.generate-build-and-run XSDK_PROCESSOR <processor> ;
+toolset.flags xsdk.generate-build-and-run XSDK_PROC_ID <processor-id> ;
 
 rule generate-build-and-run ( targets + : sources + : properties * )
 {
@@ -400,8 +464,6 @@ rule generate-build ( targets + : sources + : properties * )
   assert.equal [ sequence.length $(targets) ] : 1 ;
   assert.equal [ sequence.length $(sources) ] : 1 ;
 
-  check-properties $(properties) ;
-
   local target = $(targets[1]) ;
   local source = $(sources[1]) ;
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
@@ -410,15 +472,15 @@ rule generate-build ( targets + : sources + : properties * )
 
   local hdf = $(source:G=) ;
 
-  local processor = [ feature.get-values <processor> : $(properties) ] ;
-  local xsdk-processor = [ processor-to-xsdk $(processor) ] ;
+  local xsdk-os = [ feature.get-values <xsdk-os> : $(properties) ] ;
+  local xsdk-processor = [ feature.get-values <xsdk-processor> : $(properties) ] ;
   local processor-id = [ feature.get-values <processor-id> : $(properties) ] ;
   processor-id ?= 0 ;
-  local target-os = [ feature.get-values <target-os> : $(properties) ] ;
-  local xsdk-target-os = [ target-os-to-xsdk $(target-os) ] ;
-
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
   xsdk-template ?= "Empty Application" ;
+
+  assert.variable-not-empty xsdk-os ;
+  assert.variable-not-empty xsdk-processor ;
 
   local lines ;
 
@@ -442,7 +504,7 @@ rule generate-build ( targets + : sources + : properties * )
   # create and configure the bsp
   # @todo print out all available options nicely
   # @todo check for errors
-  lines += "createbsp -name bsp -proc psu_$(xsdk-processor)_$(processor-id) -hwproject hw -os $(xsdk-target-os)" ;
+  lines += "createbsp -name bsp -proc psu_$(xsdk-processor)_$(processor-id:E=0) -hwproject hw -os $(xsdk-os)" ;
   # @todo print out all available options for each library nicely
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
@@ -461,7 +523,7 @@ rule generate-build ( targets + : sources + : properties * )
 
   # create a dummy application for the linker file
   # @todo check for errors
-  lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-processor)_$(processor-id) -hwproject hw -os $(xsdk-target-os)" ;
+  lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-processor)_$(processor-id:E=0) -hwproject hw -os $(xsdk-os)" ;
 
   # build the bsp (but not the application)
   # @todo check for errors
@@ -479,8 +541,6 @@ rule generate-run ( targets + : sources + : properties * )
   assert.equal [ sequence.length $(targets) ] : 1 ;
   assert.equal [ sequence.length $(sources) ] : 2 ;
 
-  check-properties $(properties) ;
-
   local target = $(targets[1]) ;
   local build-source = $(sources[1]) ;
   local hdf-source = $(sources[2]) ;
@@ -490,11 +550,6 @@ rule generate-run ( targets + : sources + : properties * )
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
 
   local fpga-name = $(hdf-source:B) ;
-
-  # @todo use these below to configure
-  local processor = [ feature.get-values <processor> : $(properties) ] ;
-  local processor-id = [ feature.get-values <processor-id> : $(properties) ] ;
-  processor-id ?= 0 ;
 
   local lines ;
 
@@ -528,7 +583,7 @@ rule generate-run ( targets + : sources + : properties * )
 
     "source [file normalize [file join $xsdkroot scripts sdk util zynqmp_utils.tcl]]"
 
-    # @todo below is RPU-specific, not easy to generalize without knowing a lot
+    # @todo below is RPU-specific, generalize using properties
     "targets -set -nocase -filter {name =~ \"APU*\" && jtag_cable_name =~ $jtag_cable_name} -index 1"
     "rst -system"
     "after 3000"
@@ -586,117 +641,8 @@ actions run-xsct
   "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
 
-rule ws-generator ( targets + : sources + : properties * )
+rule generate-ws ( targets + : sources + : properties * )
 {
   # assert.equal [ sequence.length $(targets) ] : 2 ;
   assert.equal [ sequence.length $(sources) ] : 1 ;
-
-  check-properties $(properties) ;
-}
-
-# Check that the given properties are supported by this module and
-# report an error if not.
-#
-local rule check-properties ( properties * )
-{
-  if ! [ feature.get-values <target-os> : $(properties) ]
-  {
-    errors.user-error "<target-os> is empty, support values are [" '$(target-os-supported)' "]" ;
-  }
-  if ! [ feature.get-values <processor> : $(properties) ]
-  {
-    errors.user-error "<processor> is empty, support values are [" '$(processor-supported)' "]" ;
-  }
-
-  check-feature-supported target-os : $(properties) ;
-  check-feature-supported processor : $(properties) ;
-}
-
-# Check that the given properties are supported by this module for
-# feature <name> and report an error if not.
-#
-local rule check-feature-supported ( name : properties * )
-{
-  local f = [ feature.get-values <$(name)> : $(properties) ] ;
-  if ! $(f) in $($(name)-supported)
-  {
-    errors.user-error '$(f)' "is not a supported value of <$(name)>, supported values are [" '$($(name)-supported)' "]" ;
-  }
-}
-
-local rule target-os-to-xsdk ( value )
-{
-  assert.in $(value) : [ feature.values <target-os> ] ;
-
-  local tmp ;
-  switch $(value)
-  {
-    case elf : tmp = standalone ;
-    case freertos : tmp = freertos10_xilinx ;
-    case xilkernel : tmp = xilkernel ;
-  }
-
-  assert.variable-not-empty tmp ;
-
-  return $(tmp) ;
-}
-
-local rule processor-to-toolset ( value )
-{
-  assert.in $(value) : [ feature.values <processor> ] ;
-
-  local tmp ;
-  switch $(value)
-  {
-    case cortex-r5 : tmp = gcc-7xilinxarmr5 ;
-    case cortex-a53 : tmp = gcc-7xilinxaarch64 ;
-  }
-
-  assert.variable-not-empty tmp ;
-
-  return $(tmp) ;
-}
-
-local rule processor-to-xsdk ( value )
-{
-  assert.in $(value) : [ feature.values <processor> ] ;
-
-  local tmp ;
-  switch $(value)
-  {
-    case cortex-a9 : tmp = cortexa9 ;
-    case cortex-a53 : tmp = cortexa53 ;
-    case cortex-r5 : tmp = cortexr5 ;
-  }
-
-  assert.variable-not-empty tmp ;
-
-  return $(tmp) ;
-}
-
-local rule processor-to-defines ( value )
-{
-  assert.in $(value) : [ feature.values <processor> ] ;
-
-  local tmp ;
-  switch $(value)
-  {
-    case cortex-r5 : tmp += ARMR5 ;
-  }
-
-  return $(tmp) ;
-}
-
-local rule xsdk-library-to-library ( value )
-{
-  local tmp = $(value) ;
-  switch $(tmp)
-  {
-    case libmetal : tmp = metal ;
-    case openamp : tmp = open_amp ;
-  }
-
-  assert.variable-not-empty tmp ;
-
-  return $(tmp) ;
 }
