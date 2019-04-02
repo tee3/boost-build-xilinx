@@ -25,12 +25,10 @@ xsdkws ws
 
 exe example
   : # sources
-    ../example.cpp
+    main.cpp
 
     ws
   : # requirements
-    <target-os>freertos
-
     <link>static
 
     <instruction-set>cortex-r5
