@@ -362,10 +362,11 @@ class ws-generator : generator
 
     t = [ class.new file-target $(ws)/hw/psu_init : H : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ class.new file-target $(ws)/hw/psu_init : C : $(project) : $(a)  ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
     t = [ class.new file-target $(ws)/hw/psu_init_gpl : H : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
+    # @todo this should not be linked in except in very specific circumstances
+    # t = [ class.new file-target $(ws)/hw/psu_init : C : $(project) : $(a)  ] ;
+    # virtual-targets += [ virtual-target.register $(t) ] ;
     # @todo this duplicates whats in psu_init for some reason, which one is the right one?
     # t = [ class.new file-target $(ws)/hw/psu_init_gpl : C : $(project) : $(a)  ] ;
     # virtual-targets += [ virtual-target.register $(t) ] ;
@@ -640,6 +641,13 @@ actions run-xsct
 {
   "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
+
+# @todo these magically result in XSDKWS being dependent on the right stuff
+toolset.flags xsdk.generate-ws XSDK_TARGET_OS <target-os> ;
+toolset.flags xsdk.generate-ws XSDK_LINK <link> ;
+toolset.flags xsdk.generate-ws XSDK_LINK <optimization> ;
+toolset.flags xsdk.generate-ws XSDK_PROCESSOR <processor> ;
+toolset.flags xsdk.generate-ws XSDK_PROC_ID <processor-id> ;
 
 rule generate-ws ( targets + : sources + : properties * )
 {
