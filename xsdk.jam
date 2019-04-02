@@ -522,9 +522,13 @@ rule generate-build ( targets + : sources + : properties * )
   # @todo check for errors
   lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
 
-  # build the bsp (but not the application)
+  # build the bsp
   # @todo check for errors
   lines += "projects -build -type bsp -name bsp" ;
+
+  # build the application
+  # @todo check for errors
+  lines += "projects -build -type app -name app" ;
 
   print.output $(target) ;
   print.text "#!/usr/bin/env xsct" : true ;
