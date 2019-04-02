@@ -85,7 +85,7 @@ for local variant in $(variant-desired)
     {
       exe example-$(variant)-$(target-os)-$(instruction-set)
         : # sources
-          ../example.cpp
+          empty.cpp
 
           $(target-os)-$(instruction-set)-ws
         : # requirements
