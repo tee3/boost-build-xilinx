@@ -364,15 +364,6 @@ class ws-generator : generator
     t = [ class.new file-target $(ws)/bsp/system : MSS : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-
-    if [ $(property-set).get <target-os> ] = freertos
-    {
-      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
-      virtual-targets += [ virtual-target.register $(t) ] ;
-    }
-
     for local l in [ $(property-set).get <xsdk-library> ]
     {
       local translated-l = [ xsdk-library-to-library $(l) ] ;
@@ -380,6 +371,20 @@ class ws-generator : generator
       t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
+
+    if [ $(property-set).get <target-os> ] = freertos
+    {
+      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
+
+    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+
+    t = [ class.new searched-lib-target gcc : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
+    t = [ class.new searched-lib-target c : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
 
     return $(virtual-targets) ;
   }
