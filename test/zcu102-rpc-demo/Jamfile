@@ -13,7 +13,7 @@ xsdkws ws
 
     <link>static
 
-    <processor>cortex-r5
+    <instruction-set>cortex-r5
 
     <xsdk-template>"OpenAMP RPC Demo"
 
@@ -33,10 +33,10 @@ exe example
 
     <link>static
 
-    <processor>cortex-r5
+    <instruction-set>cortex-r5
 
-    <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
-    <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+    <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
+    <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
   : # default-build
   : # usage-requirements
   ;

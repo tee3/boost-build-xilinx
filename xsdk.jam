@@ -43,7 +43,7 @@ for local t in freertos xilkernel
   }
 }
 
-feature.feature xsdk-processor
+feature.feature xsdk-instruction-set
   : # values
     # arm
     cortexa9
@@ -53,27 +53,28 @@ feature.feature xsdk-processor
     propagated optional
   ;
 
-# @todo this should be part of boost.build
-feature.feature processor
-  : # values
-    cortex-a9
-    cortex-a53
-    cortex-r5
-  : # attributes
-    propagated optional
-  ;
+# @todo until all instruction-set supported in Boost.Build
+for local t in cortex-a9 cortex-a53 cortex-r5
 
-feature.feature processor-id : : optional free link-incompatible ;
+{
+  local instruction-set-values = [ feature.values <instruction-set> ] ;
+  if ! $(t) in $(instruction-set-values)
+  {
+    feature.extend instruction-set : $(t) ;
+  }
+}
 
-type.register XSCT : xsct ;
-
-type.register XSCTRUN : xsctrun ;
+feature.feature xsdk-processor-id : 0 1 2 3 : link-incompatible ;
+feature.set-default xsdk-processor-id : 0 ;
 
 type.register XSDKWS : xsdkws ;
 
-type.register MSS : mss ;
-
 type.register HDF : hdf ;
+
+type.register XSCT : xsct ;
+type.register XSCTRUN : xsctrun ;
+
+type.register MSS : mss ;
 type.register BIT : bit ;
 type.register TCL : tcl ;
 
@@ -169,12 +170,25 @@ class build-and-run-generator : generator
     }
     ps = [ $(ps).add-raw <xsdk-os>$(xsdk-os) ] ;
 
-    local xsdk-processor = [ processor-to-xsdk [ $(property-set).get <processor> ] ] ;
-    if ! $(xsdk-processor)
+    local xsdk-instruction-set = [ instruction-set-to-xsdk [ $(property-set).get <instruction-set> ] ] ;
+    if ! $(xsdk-instruction-set)
     {
-      errors.user-error "unsupported <processor> " [ $(property-set).get <processor> ] ;
+      errors.user-error "unsupported <instruction-set> " [ $(property-set).get <instruction-set> ] ;
     }
-    ps = [ $(ps).add-raw <xsdk-processor>$(xsdk-processor) ] ;
+    ps = [ $(ps).add-raw <xsdk-instruction-set>$(xsdk-instruction-set) ] ;
+
+    ps = [ $(ps).add-raw <relevant>target-os ] ;
+    ps = [ $(ps).add-raw <relevant>link ] ;
+    ps = [ $(ps).add-raw <relevant>optimization ] ;
+    ps = [ $(ps).add-raw <relevant>instruction-set ] ;
+    ps = [ $(ps).add-raw <relevant>xsdk-processor-id ] ;
+
+    # ps = [ $(ps).add-raw <relevant>toolset ] ;
+    ps = [ $(ps).add-raw <relevant>include ] ;
+    ps = [ $(ps).add-raw <relevant>define ] ;
+    ps = [ $(ps).add-raw <relevant>cflags ] ;
+    ps = [ $(ps).add-raw <relevant>linkflags ] ;
+    ps = [ $(ps).add-raw <relevant>library ] ;
 
     # add generated properties to this target
     property-set = [ $(property-set).add $(ps) ] ;
@@ -215,9 +229,9 @@ class build-and-run-generator : generator
     return $(tmp) ;
   }
 
-  rule processor-to-xsdk ( value )
+  rule instruction-set-to-xsdk ( value )
   {
-    assert.in $(value) : [ feature.values <processor> ] ;
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
     switch $(value)
@@ -270,20 +284,34 @@ class ws-generator : generator
       ws-dir = $(p)/$(n) ;
     }
 
+    ps = [ $(ps).add-raw <relevant>target-os ] ;
+    ps = [ $(ps).add-raw <relevant>variant ] ;
+    ps = [ $(ps).add-raw <relevant>link ] ;
+    ps = [ $(ps).add-raw <relevant>optimization ] ;
+    ps = [ $(ps).add-raw <relevant>instruction-set ] ;
+    ps = [ $(ps).add-raw <relevant>xsdk-processor-id ] ;
+
+    # ps = [ $(ps).add-raw <relevant>toolset ] ;
+    ps = [ $(ps).add-raw <relevant>include ] ;
+    ps = [ $(ps).add-raw <relevant>define ] ;
+    ps = [ $(ps).add-raw <relevant>cflags ] ;
+    ps = [ $(ps).add-raw <relevant>linkflags ] ;
+    ps = [ $(ps).add-raw <relevant>library ] ;
+
     # add properties from createhw
 
     ps = [ $(ps).add-raw <include>$(ws-dir)/hw ] ;
 
-    local processor = [ $(property-set).get <processor> ] ;
+    local instruction-set = [ $(property-set).get <instruction-set> ] ;
 
     # @todo this cannot work due to toolset and usage-requirement
-    # toolset = [ processor-to-toolset $(processor) ] ;
+    # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
     # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
 
     # @todo these should be done in gcc.jam really
-    # @todo support specific processors better
-    ps = [ $(ps).add-raw <cflags>-mtune=$(processor) ] ;
-    switch $(processor)
+    # @todo support specific instruction-sets better
+    ps = [ $(ps).add-raw <cflags>-mtune=$(instruction-set) ] ;
+    switch $(instruction-set)
     {
       case cortex-r5 : ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
     }
@@ -302,7 +330,7 @@ class ws-generator : generator
 
     # add properties from createapp
 
-    local defines = [ processor-to-defines $(processor) ] ;
+    local defines = [ instruction-set-to-defines $(instruction-set) ] ;
 
     ps = [ $(ps).add-raw <define>$(defines) ] ;
 
@@ -326,11 +354,11 @@ class ws-generator : generator
       shared = true ;
     }
 
-    local xsdk-processor = [ $(property-set).get <xsdk-processor> ] ;
-    local processor-id = [ $(property-set).get <processor-id> ] ;
-    processor-id ?= 0 ;
+    local xsdk-instruction-set = [ $(property-set).get <xsdk-instruction-set> ] ;
+    local xsdk-processor-id = [ $(property-set).get <xsdk-processor-id> ] ;
 
-    assert.variable-not-empty xsdk-processor ;
+    assert.variable-not-empty xsdk-instruction-set ;
+    assert.variable-not-empty xsdk-processor-id ;
 
     local virtual-targets ;
 
@@ -344,7 +372,7 @@ class ws-generator : generator
     local build-dir = [ $(t).path ] ;
     local ws = [ $(t).name ] ;
 
-    local bsp-dir = $(build-dir)/$(ws)/bsp/psu_$(xsdk-processor)_$(processor-id) ;
+    local bsp-dir = $(build-dir)/$(ws)/bsp/psu_$(xsdk-instruction-set)_$(xsdk-processor-id) ;
 
     assert.variable-not-empty bsp-dir ;
 
@@ -396,9 +424,9 @@ class ws-generator : generator
     return $(virtual-targets) ;
   }
 
-  rule processor-to-defines ( value )
+  rule instruction-set-to-defines ( value )
   {
-    assert.in $(value) : [ feature.values <processor> ] ;
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
     switch $(value)
@@ -409,9 +437,9 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  rule processor-to-toolset ( value )
+  rule instruction-set-to-toolset ( value )
   {
-    assert.in $(value) : [ feature.values <processor> ] ;
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
     switch $(value)
@@ -442,14 +470,7 @@ class ws-generator : generator
 
 generators.register [ class.new build-and-run-generator xsdk.generate-build-and-run : HDF : XSCT TCL(%-run) ] ;
 generators.register-standard xsdk.run-xsct : XSCT : XSCTRUN ;
-generators.register [ class.new ws-generator xsdk.generate-ws : XSCTRUN : XSDKWS BIT H C TCL MSS LIB ] ;
-
-# @todo these magically result in XSDKWS being dependent on the right stuff
-toolset.flags xsdk.generate-build-and-run XSDK_TARGET_OS <target-os> ;
-toolset.flags xsdk.generate-build-and-run XSDK_LINK <link> ;
-toolset.flags xsdk.generate-build-and-run XSDK_LINK <optimization> ;
-toolset.flags xsdk.generate-build-and-run XSDK_PROCESSOR <processor> ;
-toolset.flags xsdk.generate-build-and-run XSDK_PROC_ID <processor-id> ;
+generators.register [ class.new ws-generator xsdk.generate-ws : XSCTRUN : XSDKWS BIT H TCL MSS LIB ] ;
 
 rule generate-build-and-run ( targets + : sources + : properties * )
 {
@@ -474,14 +495,14 @@ rule generate-build ( targets + : sources + : properties * )
   local hdf = $(source:G=) ;
 
   local xsdk-os = [ feature.get-values <xsdk-os> : $(properties) ] ;
-  local xsdk-processor = [ feature.get-values <xsdk-processor> : $(properties) ] ;
-  local processor-id = [ feature.get-values <processor-id> : $(properties) ] ;
-  processor-id ?= 0 ;
+  local xsdk-instruction-set = [ feature.get-values <xsdk-instruction-set> : $(properties) ] ;
+  local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
   xsdk-template ?= "Empty Application" ;
 
   assert.variable-not-empty xsdk-os ;
-  assert.variable-not-empty xsdk-processor ;
+  assert.variable-not-empty xsdk-instruction-set ;
+  assert.variable-not-empty xsdk-processor-id ;
 
   local lines ;
 
@@ -505,7 +526,7 @@ rule generate-build ( targets + : sources + : properties * )
   # create and configure the bsp
   # @todo print out all available options nicely
   # @todo check for errors
-  lines += "createbsp -name bsp -proc psu_$(xsdk-processor)_$(processor-id:E=0) -hwproject hw -os $(xsdk-os)" ;
+  lines += "createbsp -name bsp -proc psu_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
   # @todo print out all available options for each library nicely
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
@@ -524,7 +545,7 @@ rule generate-build ( targets + : sources + : properties * )
 
   # create a dummy application for the linker file
   # @todo check for errors
-  lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-processor)_$(processor-id:E=0) -hwproject hw -os $(xsdk-os)" ;
+  lines += "createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc psu_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
 
   # build the bsp (but not the application)
   # @todo check for errors
@@ -636,18 +657,19 @@ rule generate-run ( targets + : sources + : properties * )
 }
 
 TOUCH = [ common.file-touch-command ] ;
+if [ os.name ] = NT
+{
+    RMDIR = rmdir /s /q ;
+}
+else
+{
+    RMDIR = rm -rf ;
+}
 
 actions run-xsct
 {
-  "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
+  $(RMDIR) $(<[1]:S=.xsdkws) && "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
-
-# @todo these magically result in XSDKWS being dependent on the right stuff
-toolset.flags xsdk.generate-ws XSDK_TARGET_OS <target-os> ;
-toolset.flags xsdk.generate-ws XSDK_LINK <link> ;
-toolset.flags xsdk.generate-ws XSDK_LINK <optimization> ;
-toolset.flags xsdk.generate-ws XSDK_PROCESSOR <processor> ;
-toolset.flags xsdk.generate-ws XSDK_PROC_ID <processor-id> ;
 
 rule generate-ws ( targets + : sources + : properties * )
 {

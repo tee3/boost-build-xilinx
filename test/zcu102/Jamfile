@@ -15,14 +15,14 @@ local variant-desired = debug release ;
 # @todo xilkernel is not exactly supported by XSDK
 # local target-os-desired = elf freertos xilkernel ;
 local target-os-desired = elf freertos ;
-local processor-desired = cortex-a53 cortex-r5 ;
+local instruction-set-desired = cortex-a53 cortex-r5 ;
 
-for local processor in $(processor-desired)
+for local instruction-set in $(instruction-set-desired)
 {
   if elf in $(target-os-desired)
   {
     # @todo add more configurations
-    xsdkws elf-$(processor)-ws
+    xsdkws elf-$(instruction-set)-ws
       : # sources
         $(hdf)
       : # requirements
@@ -30,7 +30,7 @@ for local processor in $(processor-desired)
 
         <link>static
 
-        <processor>$(processor)
+        <instruction-set>$(instruction-set)
 
         <xsdk-library>xilffs
 
@@ -43,7 +43,7 @@ for local processor in $(processor-desired)
   if freertos in $(target-os-desired)
   {
     # @todo add more configurations
-    xsdkws freertos-$(processor)-ws
+    xsdkws freertos-$(instruction-set)-ws
       : # sources
         $(hdf)
       : # requirements
@@ -51,7 +51,7 @@ for local processor in $(processor-desired)
 
         <link>static
 
-        <processor>$(processor)
+        <instruction-set>$(instruction-set)
 
         <xsdk-library>xilffs
       : # default-build
@@ -62,7 +62,7 @@ for local processor in $(processor-desired)
   if xilkernel in $(target-os-desired)
   {
     # @todo add more configurations
-    xsdkws xilkernel-$(processor)-ws
+    xsdkws xilkernel-$(instruction-set)-ws
       : # sources
         $(hdf)
       : # requirements
@@ -70,7 +70,7 @@ for local processor in $(processor-desired)
 
         <link>static
 
-        <processor>$(processor)
+        <instruction-set>$(instruction-set)
       : # default-build
       : # usage-requirements
       ;
@@ -81,13 +81,13 @@ for local variant in $(variant-desired)
 {
   for local target-os in $(target-os-desired)
   {
-    for local processor in $(processor-desired)
+    for local instruction-set in $(instruction-set-desired)
     {
-      exe example-$(variant)-$(target-os)-$(processor)
+      exe example-$(variant)-$(target-os)-$(instruction-set)
         : # sources
           ../example.cpp
 
-          $(target-os)-$(processor)-ws
+          $(target-os)-$(instruction-set)-ws
         : # requirements
           <variant>$(variant)
 
@@ -95,10 +95,10 @@ for local variant in $(variant-desired)
 
           <link>static
 
-          <processor>$(processor)
+          <instruction-set>$(instruction-set)
 
-          <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
-          <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+          <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
+          <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
         : # default-build
         : # usage-requirements
         ;

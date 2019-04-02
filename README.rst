@@ -29,10 +29,10 @@ along with a C++ source file named ``example.cpp`` to create an
 application named ``example``.
 
 Note that in order to choose the correct toolset, the toolset should
-be made conditional on the processor in the build system.  One
-approach for doing this would be to set project requirements in the
-Jamroot.  This is required because the ``toolset`` feature cannot set
-in ``usage-requirements``.
+be made conditional on the ``instruction-set`` in the build system.
+One approach for doing this would be to set project requirements in
+the Jamroot.  This is required because the ``toolset`` feature cannot
+set in ``usage-requirements``.
 
 .. code::
 
@@ -70,12 +70,12 @@ in ``usage-requirements``.
    # Jamroot
    project
      : requirements
-       <processor>cortex-a9:<toolset>gcc-7xilinxaarch32
-       <processor>cortex-a53:<toolset>gcc-7xilinxaarch64
+       <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
+       <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
 
-       <processor>cortex-r5:<toolset>gcc-7xilinxarmr5
+       <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
 
-       <processor>microblaze:<toolset>gcc-7xilinxmicroblaze
+       <instruction-set>microblaze:<toolset>gcc-7xilinxmicroblaze
      ;
 
 .. code::
@@ -146,15 +146,6 @@ Instruction Sets
 * ``armv7-r``
 * ``armv8-a``
 
-Processors
-~~~~~~~~~~
-
-@todo support more processors
-
-* ``cortex-a9``
-* ``cortex-a53``
-* ``cortex-r5``
-
 Main Target
 ~~~~~~~~~~~
 
@@ -193,7 +184,7 @@ This project will add one main target type.
 
    .. code::
 
-      createbsp -name bsp -proc $(xsdk-processor) -hwproject hw -os $(xsdk-os-name)
+      createbsp -name bsp -proc $(xsdk-instruction-set) -hwproject hw -os $(xsdk-os-name)
 
       configbsp -bsp bsp sleep_timer psu_ttc_3
 
@@ -207,7 +198,7 @@ This project will add one main target type.
 
    .. code::
 
-      createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(xsdk-processor)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os-name)
+      createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc psu_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os-name)
 
 Boost.Build Features
 ~~~~~~~~~~~~~~~~~~~~
@@ -219,8 +210,6 @@ workspace.
 * ``link``
 * ``architecture``
 * ``instruction-set``
-* ``processor`` - @todo this is (hopefully) a new feature
-* ``processor-id`` - @todo this is (hopefully) a new feature
 
 XSDK-related Features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -245,6 +234,11 @@ following toolset flags.
 ``xsdk-library``
 
    This feature adds Xilinx libraries to the board-support package.
+
+``xsdk-processor-id``
+
+   This feature assigns an application to run on a particular
+   processor on the SoC.
 
 Testing
 -------
