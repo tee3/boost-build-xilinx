@@ -171,7 +171,14 @@ class ws-generator : generator
   {
     property-set = [ $(property-set).add-raw <relevant>toolset ] ;
     property-set = [ $(property-set).add-raw <relevant>target-os ] ;
+    property-set = [ $(property-set).add-raw <relevant>link ] ;
     property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
+
+    # @todo is dynamic linking possible
+####    if [ $(property-set).get <link> ] != static
+####    {
+####      errors.error "<link> must be static" ;
+####    }
 
     if ! [ $(property-set).get <instruction-set> ]
     {
@@ -360,7 +367,7 @@ class ws-generator : generator
     t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    if [ $(property-set).get <freertos> ] = freertos
+    if [ $(property-set).get <target-os> ] = freertos
     {
       t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
@@ -483,14 +490,6 @@ rule generate-build ( targets + : sources + : properties * )
   local lines ;
 
   # @todo check for errors
-
-  # @todo delete the workspace if it exists
-  lines +=
-    "if {[file exists $(ws)]} then {"
-    "    puts \"error: $(ws) exists.\""
-    "    exit 1"
-    "}"
-  ;
 
   # set the workspace
   lines += "setws $(ws)" ;
