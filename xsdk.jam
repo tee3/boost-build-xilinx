@@ -43,6 +43,16 @@ for local t in freertos xilkernel
   }
 }
 
+# @todo until all architecture supported in Boost.Build
+for local t in microblaze
+{
+  local architecture-values = [ feature.values <architecture> ] ;
+  if ! $(t) in $(architecture-values)
+  {
+    feature.extend architecture : $(t) ;
+  }
+}
+
 feature.feature xsdk-instruction-set
   : # values
     # arm
@@ -147,84 +157,6 @@ rule root ( )
   return $(root) ;
 }
 
-class build-and-run-generator : generator
-{
-  import errors ;
-  import assert ;
-
-  rule __init__ ( id composing ? : source-types + : target-types-and-names + : requirements * )
-  {
-    generator.__init__ $(id) $(composing) : $(source-types) : $(target-types-and-names) : $(requirements) ;
-  }
-
-  rule run ( project name ? : property-set : sources * )
-  {
-    assert.equal [ sequence.length $(sources) ] : 1 ;
-
-    local ps = [ property-set.empty ] ;
-
-    local xsdk-os = [ target-os-to-xsdk [ $(property-set).get <target-os> ] ] ;
-    if ! $(xsdk-os)
-    {
-      errors.user-error "unsupported <target-os> " [ $(property-set).get <target-os> ] ;
-    }
-    ps = [ $(ps).add-raw <xsdk-os>$(xsdk-os) ] ;
-
-    local xsdk-instruction-set = [ instruction-set-to-xsdk [ $(property-set).get <instruction-set> ] ] ;
-    if ! $(xsdk-instruction-set)
-    {
-      errors.user-error "unsupported <instruction-set> " [ $(property-set).get <instruction-set> ] ;
-    }
-    ps = [ $(ps).add-raw <xsdk-instruction-set>$(xsdk-instruction-set) ] ;
-
-    # add generated properties to this target
-    property-set = [ $(property-set).add $(ps) ] ;
-
-    r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
-
-    return [ generators.add-usage-requirements $(r) : [ $(ps).raw ] ] ;
-  }
-
-  rule generated-targets ( sources + : property-set : project name ? )
-  {
-    return [ generator.generated-targets $(sources) : $(property-set) : $(project) $(name) ] ;
-  }
-
-  rule target-os-to-xsdk ( value )
-  {
-    assert.in $(value) : [ feature.values <target-os> ] ;
-
-    local tmp ;
-    switch $(value)
-    {
-      case elf : tmp = standalone ;
-      case freertos : tmp = freertos10_xilinx ;
-      case xilkernel : tmp = xilkernel ;
-    }
-
-    assert.variable-not-empty tmp ;
-
-    return $(tmp) ;
-  }
-
-  rule instruction-set-to-xsdk ( value )
-  {
-    assert.in $(value) : [ feature.values <instruction-set> ] ;
-
-    local tmp ;
-    switch $(value)
-    {
-      case cortex-a9 : tmp = cortexa9 ;
-      case cortex-a53 : tmp = cortexa53 ;
-      case cortex-r5 : tmp = cortexr5 ;
-    }
-
-    assert.variable-not-empty tmp ;
-
-    return $(tmp) ;
-  }
-}
-
 class ws-generator : generator
 {
   import errors ;
@@ -241,6 +173,25 @@ class ws-generator : generator
     property-set = [ $(property-set).add-raw <relevant>target-os ] ;
     property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
 
+    if ! [ $(property-set).get <instruction-set> ]
+    {
+      errors.error "<instruction-set> must be set" ;
+    }
+
+    local xsdk-os = [ target-os-to-xsdk [ $(property-set).get <target-os> ] ] ;
+    if ! $(xsdk-os)
+    {
+      errors.error "unsupported <target-os> " [ $(property-set).get <target-os> ] ;
+    }
+    property-set = [ $(property-set).add-raw <xsdk-os>$(xsdk-os) ] ;
+
+    local xsdk-instruction-set = [ instruction-set-to-xsdk [ $(property-set).get <instruction-set> ] ] ;
+    if ! $(xsdk-instruction-set)
+    {
+      errors.error "unsupported <instruction-set> " [ $(property-set).get <instruction-set> ] ;
+    }
+    property-set = [ $(property-set).add-raw <xsdk-instruction-set>$(xsdk-instruction-set) ] ;
+
     local r = [ generator.run $(project) $(name) : $(property-set) : $(sources) ] ;
 
     local ps ;
@@ -256,15 +207,19 @@ class ws-generator : generator
       vts = $(r) ;
     }
 
-    assert.equal [ $(vts[1]).type ] : XSDKWS ;
-
     local ws-dir ;
+    for local vt in $(vts)
     {
-      local p = [ $(vts[1]).path ] ;
-      local n = [ $(vts[1]).name ] ;
+      if [ $(vt).type ] = XSDKWS
+      {
+        local p = [ $(vt).path ] ;
+        local n = [ $(vt).name ] ;
 
-      ws-dir = $(p)/$(n) ;
+        ws-dir = $(p)/$(n) ;
+      }
     }
+
+    assert.variable-not-empty ws-dir ;
 
     # add properties from createhw
 
@@ -311,6 +266,8 @@ class ws-generator : generator
   {
     assert.equal [ sequence.length $(sources) ] : 1 ;
 
+    local virtual-targets ;
+
     if ! $(name)
     {
       name = [ generator.determine-output-name $(sources[1]) ] ;
@@ -328,23 +285,51 @@ class ws-generator : generator
     assert.variable-not-empty xsdk-instruction-set ;
     assert.variable-not-empty xsdk-processor-id ;
 
-    local virtual-targets ;
+    {
+      local a = [ class.new action $(sources) : xsdk.generate-run : $(property-set) ] ;
+      local t = [ class.new file-target run : TCL : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
 
-    local a = [ class.new action $(sources) : xsdk.generate-ws : $(property-set) ] ;
+    local xsct-target ;
+    {
+      local a = [ class.new action $(sources) : xsdk.generate-build : $(property-set) ] ;
+      local t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
 
-    local t ;
+      xsct-target = $(t) ;
+    }
 
-    t = [ class.new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
+    local xsctrun-target ;
+    {
+      local a = [ class.new action $(xsct-target) : xsdk.generate-ws : $(property-set) ] ;
+      local t = [ class.new file-target $(name) : XSCTRUN : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
 
-    local build-dir = [ $(t).path ] ;
-    local ws = [ $(t).name ] ;
+      xsctrun-target = $(t) ;
+    }
+
+    local xsdkws-target ;
+    {
+      local a = [ class.new action $(xsctrun-target) : xsdk.ws-complete : $(property-set) ] ;
+      local t = [ class.new file-target $(name) : XSDKWS : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+
+      xsdkws-target = $(t) ;
+    }
+
+    local build-dir = [ $(xsdkws-target).path ] ;
+    local ws = [ $(xsdkws-target).name ] ;
 
     local bsp-dir = $(build-dir)/$(ws)/bsp/psu_$(xsdk-instruction-set)_$(xsdk-processor-id) ;
 
     assert.variable-not-empty bsp-dir ;
 
     # targets generated by createhw
+
+    local a = [ class.new action $(xsdkws-target) : xsdk.ws-files : $(property-set) ] ;
+
+    local t ;
 
     # @todo do not generate the HDF target since it might be circular
     #t = [ class.new file-target $(ws)/hw/system : HDF : $(project) : $(a) ] ;
@@ -392,6 +377,40 @@ class ws-generator : generator
     return $(virtual-targets) ;
   }
 
+  rule target-os-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <target-os> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case elf : tmp = standalone ;
+      case freertos : tmp = freertos10_xilinx ;
+      case xilkernel : tmp = xilkernel ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
+  rule instruction-set-to-xsdk ( value )
+  {
+    assert.in $(value) : [ feature.values <instruction-set> ] ;
+
+    local tmp ;
+    switch $(value)
+    {
+      case cortex-a9 : tmp = cortexa9 ;
+      case cortex-a53 : tmp = cortexa53 ;
+      case cortex-r5 : tmp = cortexr5 ;
+    }
+
+    assert.variable-not-empty tmp ;
+
+    return $(tmp) ;
+  }
+
   rule instruction-set-to-defines ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
@@ -436,18 +455,7 @@ class ws-generator : generator
   }
 }
 
-generators.register [ class.new build-and-run-generator xsdk.generate-build-and-run : HDF : XSCT TCL(%-run) ] ;
-generators.register-standard xsdk.run-xsct : XSCT : XSCTRUN ;
-generators.register [ class.new ws-generator xsdk.generate-ws : XSCTRUN : XSDKWS BIT H TCL MSS LIB ] ;
-
-rule generate-build-and-run ( targets + : sources + : properties * )
-{
-  assert.equal [ sequence.length $(targets) ] : 2 ;
-  assert.equal [ sequence.length $(sources) ] : 1 ;
-
-  generate-build $(targets[1]) : $(sources) : $(properties) ;
-  generate-run $(targets[2]) : $(targets[1]) $(sources) : $(properties) ;
-}
+generators.register [ class.new ws-generator xsdk.generate-ws : HDF : XSDKWS XSCT XSCTRUN H LIB BIT MSS TCL ] ;
 
 rule generate-build ( targets + : sources + : properties * )
 {
@@ -477,12 +485,12 @@ rule generate-build ( targets + : sources + : properties * )
   # @todo check for errors
 
   # @todo delete the workspace if it exists
-###  lines +=
-###    "if {[file exists $(ws)]} then {"
-###    "    puts \"error: $(ws) exists.\""
-###    "    exit 1"
-###    "}"
-###  ;
+  lines +=
+    "if {[file exists $(ws)]} then {"
+    "    puts \"error: $(ws) exists.\""
+    "    exit 1"
+    "}"
+  ;
 
   # set the workspace
   lines += "setws $(ws)" ;
@@ -529,14 +537,13 @@ rule generate-build ( targets + : sources + : properties * )
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
-  assert.equal [ sequence.length $(sources) ] : 2 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
 
   local target = $(targets[1]) ;
-  local build-source = $(sources[1]) ;
-  local hdf-source = $(sources[2]) ;
+  local hdf-source = $(sources[1]) ;
 
-  local ws-dir = [ on $(build-source) return $(LOCATE) ] ;
-  local ws-name = $(build-source:G=) ;
+  local ws-dir = [ on $(target) return $(LOCATE) ] ;
+  local ws-name = $(target:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
 
   local fpga-name = $(hdf-source:B) ;
@@ -556,6 +563,8 @@ rule generate-run ( targets + : sources + : properties * )
     ;
 
   lines +=
+    "set program [file normalize [lindex argv 0]"
+
     "set ws [file normalize $(ws)]"
 
     "set hdf [file normalize [file join $ws system.hdf]]"
@@ -634,13 +643,19 @@ else
     RMDIR = rm -rf ;
 }
 
-actions run-xsct
+actions generate-ws
 {
   $(RMDIR) $(<[1]:S=.xsdkws) && "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
 
-rule generate-ws ( targets + : sources + : properties * )
+rule ws-complete ( targets + : sources + : properties * )
 {
-  # assert.equal [ sequence.length $(targets) ] : 2 ;
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
+}
+
+rule ws-files ( targets + : sources + : properties * )
+{
+  # assert.equal [ sequence.length $(targets) ] : 8 ;
   assert.equal [ sequence.length $(sources) ] : 1 ;
 }
