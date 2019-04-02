@@ -29,10 +29,6 @@ exe example
 
     ws
   : # requirements
-    <link>static
-
-    <instruction-set>cortex-r5
-
     <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
     <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
   : # default-build
