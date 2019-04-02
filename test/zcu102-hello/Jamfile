@@ -18,7 +18,7 @@ xsdkws ws
 
 exe example
   : # sources
-    ../example.cpp
+    hello.cpp
 
     ws
   : # requirements
