@@ -584,7 +584,6 @@ rule generate-print ( targets + : sources + : properties * )
   lines += "run-checked setws -switch $(ws)" ;
 
   # repo
-
   # @todo do a regexp-based parse
   lines +=
     "# repo"
@@ -623,7 +622,6 @@ rule generate-print ( targets + : sources + : properties * )
     ;
 
   # app
-
   lines +=
     "# app"
     "puts \"assembler-flags : [configapp -app app -info assembler-flags]\""
@@ -652,7 +650,6 @@ rule generate-print ( targets + : sources + : properties * )
     ;
 
   # bsp
-
   lines +=
     "# bsp"
     "puts \"[getos -bsp bsp]\""
@@ -703,7 +700,6 @@ rule generate-print ( targets + : sources + : properties * )
     ;
 
   # hw
-
   lines +=
     "# hw"
     "# @todo is there anything here"
