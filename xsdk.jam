@@ -813,11 +813,11 @@ rule generate-run ( targets + : sources + : properties * )
 TOUCH = [ common.file-touch-command ] ;
 if [ os.name ] = NT
 {
-    RMDIR = rmdir /s /q ;
+  RMDIR = rmdir /s /q ;
 }
 else
 {
-    RMDIR = rm -rf ;
+  RMDIR = rm -rf ;
 }
 
 actions generate-ws
