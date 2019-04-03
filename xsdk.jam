@@ -15,8 +15,7 @@ The Xilnx Boost.Build module provides the `xsdk` tool.
 
 == Configuration
 
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 import xsdk ;
 ----
@@ -24,16 +23,14 @@ import xsdk ;
 The XSDK tool must be configured as any other Boost.Build tool.  The
 tool will automatically detect the location and version of the tool.
 
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 using xsdk ;
 ----
 
 The desired version can be specified.
 
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 using xsdk : 2018.3 ;
 ----
@@ -41,8 +38,7 @@ using xsdk : 2018.3 ;
 The location can also be specified both with and without a desired
 version.
 
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 using xsdk : : /opt/Xilinx/SDK/2018.3 ;
 ----
@@ -72,8 +68,7 @@ the Jamroot.  This is required because the `toolset` feature cannot
 set in `usage-requirements`.
 
 .`Jamroot`
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 project
   : requirements
@@ -87,8 +82,7 @@ project
 ----
 
 .`project-config.jam`
-// @todo jam is not supported in general
-// [source,jam]
+[source,jam]
 ----
 using xsdk ;
 
