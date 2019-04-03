@@ -32,7 +32,7 @@ Xilinx SDK (XSDK)
 The Xilnx Boost.Build module provides the ``xsdk`` tool.
 
 Configuration
-`````````````
+^^^^^^^^^^^^^
 
 .. code::
 
@@ -64,7 +64,7 @@ application templates, operating systems, libraries, and drivers
 supported by the version of the tool configured.
 
 Targets
-```````
+^^^^^^^
 
 This tool provides a top-level target type named ``xsdkws`` that
 generates an XSDK Workspace as described above for supported target
@@ -76,7 +76,7 @@ scripts.
 See the Reference section for more information.
 
 Toolsets
-````````
+^^^^^^^^
 
 Note that in order to choose the correct toolset, the toolset should
 be made conditional on the ``instruction-set`` in the build system.
@@ -113,7 +113,7 @@ set in ``usage-requirements``.
    using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
 
 Example
-```````
+^^^^^^^
 
 The following is an example where a XSDK workspace named ``ws`` is
 created from a hardware specification in ``example.hdf`` and used,
