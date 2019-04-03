@@ -295,18 +295,6 @@ class ws-generator : generator
     assert.variable-not-empty xsdk-instruction-set ;
     assert.variable-not-empty xsdk-processor-id ;
 
-    {
-      local a = [ class.new action $(sources) : xsdk.generate-run : $(property-set) ] ;
-      local t = [ class.new file-target run : TCL : $(project) : $(a) ] ;
-      virtual-targets += [ virtual-target.register $(t) ] ;
-    }
-
-    {
-      local a = [ class.new action $(sources) : xsdk.generate-print : $(property-set) ] ;
-      local t = [ class.new file-target print : TCL : $(project) : $(a) ] ;
-      virtual-targets += [ virtual-target.register $(t) ] ;
-    }
-
     local xsct-target ;
     {
       local a = [ class.new action $(sources) : xsdk.generate-build : $(property-set) ] ;
@@ -323,6 +311,18 @@ class ws-generator : generator
       virtual-targets += [ virtual-target.register $(t) ] ;
 
       xsctrun-target = $(t) ;
+    }
+
+    {
+      local a = [ class.new action $(xsctrun-target) $(sources) : xsdk.generate-run : $(property-set) ] ;
+      local t = [ class.new file-target run : TCL : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
+    }
+
+    {
+      local a = [ class.new action $(xsctrun-target) $(sources) : xsdk.generate-print : $(property-set) ] ;
+      local t = [ class.new file-target print : TCL : $(project) : $(a) ] ;
+      virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
     local a = [ class.new action $(xsctrun-target) : xsdk.ws-complete : $(property-set) ] ;
@@ -554,13 +554,14 @@ rule generate-build ( targets + : sources + : properties * )
 rule generate-print ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
-  assert.equal [ sequence.length $(sources) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 2 ;
 
   local target = $(targets[1]) ;
-  local hdf-source = $(sources[1]) ;
+  local xsctrun-source = $(sources[1]) ;
+  local hdf-source = $(sources[2]) ;
 
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
-  local ws-name = $(target:G=) ;
+  local ws-name = $(xsctrun-source:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
   local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
 
@@ -714,13 +715,14 @@ rule generate-print ( targets + : sources + : properties * )
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
-  assert.equal [ sequence.length $(sources) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 2 ;
 
   local target = $(targets[1]) ;
-  local hdf-source = $(sources[1]) ;
+  local xsctrun-source = $(sources[1]) ;
+  local hdf-source = $(sources[2]) ;
 
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
-  local ws-name = $(target:G=) ;
+  local ws-name = $(xsctrun-source:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
   local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
 
