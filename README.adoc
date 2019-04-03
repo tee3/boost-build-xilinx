@@ -83,10 +83,10 @@ One approach for doing this would be to set project requirements in
 the Jamroot.  This is required because the `toolset` feature cannot
 set in `usage-requirements`.
 
+.`Jamroot`
 // @todo jam is not supported in general
 // [source,jam]
 ----
-# Jamroot
 project
   : requirements
     <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
@@ -98,11 +98,10 @@ project
   ;
 ----
 
+.`project-config.jam`
 // @todo jam is not supported in general
 // [source,jam]
 ----
-# project-config.jam
-
 using xsdk ;
 
 local xsdk-root = [ xsdk.root ] ;
@@ -125,6 +124,7 @@ application named `example`.
 Note below that the requirements of both `ws` and `example` match,
 which is how Boost.Build matches.
 
+.`Jamfile`
 // @todo jam is not supported in general
 // [source,jam]
 ----
