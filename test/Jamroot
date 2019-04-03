@@ -1,5 +1,7 @@
 import ../xsdk ;
 
+import errors ;
+
 project
   : requirements
     <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
@@ -9,6 +11,11 @@ project
   ;
 
 local xsdk-root = [ xsdk.root ] ;
+
+if ! $(xsdk-root)
+{
+  errors.user-error "The XSDK root is not set." ;
+}
 
 path-constant hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
 
