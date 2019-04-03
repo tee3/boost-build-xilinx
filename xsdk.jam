@@ -28,13 +28,12 @@ feature.feature xsdk-os
   : # values
     standalone
     freertos10_xilinx
-    xilkernel
   : # attributes
     propagated optional
   ;
 
 # @todo until all target-os supported in Boost.Build
-for local t in freertos xilkernel
+for local t in freertos
 {
   local target-os-values = [ feature.values <target-os> ] ;
   if ! $(t) in $(target-os-values)
@@ -397,7 +396,6 @@ class ws-generator : generator
     {
       case elf : tmp = standalone ;
       case freertos : tmp = freertos10_xilinx ;
-      case xilkernel : tmp = xilkernel ;
     }
 
     assert.variable-not-empty tmp ;

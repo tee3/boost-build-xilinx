@@ -12,8 +12,6 @@ if ! $(xsdk-root)
 local hdf = $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
 
 local variant-desired = debug release ;
-# @todo xilkernel is not exactly supported by XSDK
-# local target-os-desired = elf freertos xilkernel ;
 local target-os-desired = elf freertos ;
 local instruction-set-desired = cortex-a53 cortex-r5 ;
 
@@ -58,23 +56,6 @@ for local instruction-set in $(instruction-set-desired)
       : # usage-requirements
       ;
   }
-
-  if xilkernel in $(target-os-desired)
-  {
-    # @todo add more configurations
-    xsdkws xilkernel-$(instruction-set)-ws
-      : # sources
-        $(hdf)
-      : # requirements
-        <target-os>xilkernel
-
-        <link>static
-
-        <instruction-set>$(instruction-set)
-      : # default-build
-      : # usage-requirements
-      ;
-   }
 }
 
 for local variant in $(variant-desired)

@@ -120,12 +120,6 @@ Target Operating Systems
 
    @todo need a version
 
-``xilkernel``
-
-   The minimal Xilinx operating system.
-
-   @todo need a version
-
 ``freertos``
 
    The FreeRTOS operating system.
