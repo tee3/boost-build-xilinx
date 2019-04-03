@@ -325,10 +325,21 @@ following toolset flags.
 Testing
 -------
 
-There are several test projects in the ``test`` directory.
+There are several test projects in the ``test`` directory.  In order
+to run these tests and also allow ``b2 --help xsdk`` to work, set the
+``BOOST_BUILD_PATH`` environment variable to the root directory of
+this project.
+
+.. code:: sh
+
+   BOOST_BUILD_PATH=$(pwd)
+
+.. code:: bat
+
+   set BOOST_BUILD_PATH=C:\Path\To\Project\Root
 
 ``zcu102-empty``
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 This project is based on the "Empty Application" XSDK application
 template and allows building within any supported ``<target-os>elf``

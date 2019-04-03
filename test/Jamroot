@@ -1,4 +1,4 @@
-import ../xsdk ;
+import xsdk ;
 
 import errors ;
 

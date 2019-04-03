@@ -1,4 +1,4 @@
-import ../xsdk ;
+import xsdk ;
 
 using xsdk ;
 
