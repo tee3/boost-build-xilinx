@@ -96,9 +96,6 @@ for local variant in $(variant-desired)
           <link>static
 
           <instruction-set>$(instruction-set)
-
-          <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
-          <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
         : # default-build
         : # usage-requirements
         ;
