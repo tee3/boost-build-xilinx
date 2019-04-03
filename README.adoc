@@ -2,36 +2,30 @@
 
 :toc:
 
-Overview
---------
+== Overview
 
 This project adds support for the Xilinx tools to
 Boost.Build.
 
-Xilinx SDK (XSDK)
-~~~~~~~~~~~~~~~~~
+=== Xilinx SDK (XSDK)
 
 The Xilinx SDK (XSDK) provides a tool called XSCT, which generates
 components from a Hardware Definition File (HDF) as well as
 configuration options and provides support for running code on the
 hardware.
 
-Requirements
-------------
+== Requirements
 
 * Xilinx XSDK 2018.3 (or later)
 * Boost.Build from Boost C++ Libraries 1.68.0 (or later)
 
-Usage
------
+== Usage
 
-Xilinx SDK (XSDK)
-~~~~~~~~~~~~~~~~~
+=== Xilinx SDK (XSDK)
 
 The Xilnx Boost.Build module provides the `xsdk` tool.
 
-Configuration
-^^^^^^^^^^^^^
+==== Configuration
 
 [source,jam]
 ----
@@ -66,8 +60,7 @@ Boost.Build will include the XSDK location and version as well as the
 application templates, operating systems, libraries, and drivers
 supported by the version of the tool configured.
 
-Targets
-^^^^^^^
+==== Targets
 
 This tool provides a top-level target type named `xsdkws` that
 generates an XSDK Workspace as described above for supported target
@@ -78,8 +71,7 @@ scripts.
 
 See the Reference section for more information.
 
-Toolsets
-^^^^^^^^
+==== Toolsets
 
 Note that in order to choose the correct toolset, the toolset should
 be made conditional on the `instruction-set` in the build system.
@@ -117,8 +109,7 @@ using gcc : 7xilinxarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr
 using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
 ----
 
-Example
-^^^^^^^
+==== Example
 
 The following is an example where a XSDK workspace named `ws` is
 created from a hardware specification in `example.hdf` and used,
@@ -159,23 +150,19 @@ exe example
  ;
 ----
 
-Reference
----------
+== Reference
 
-Xilinx FPGA
-~~~~~~~~~~~
+=== Xilinx FPGA
 
 * Zynq UltraScale+ MPSoC
 * Zynq 7000 SoC
 
-Toolsets
-~~~~~~~~
+=== Toolsets
 
 This module supports the processor-specific `gcc` toolsets delivered
 within the Xilinx XSDK.
 
-Target Operating Systems
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== Target Operating Systems
 
 `elf`
 
@@ -188,22 +175,19 @@ Target Operating Systems
 
    The FreeRTOS operating system.
 
-Architectures
-~~~~~~~~~~~~~
+=== Architectures
 
 * ARM (`arm`)
 * Microblaze (`microblaze`)
 
-Instruction Sets
-~~~~~~~~~~~~~~~~
+=== Instruction Sets
 
 * `cortex-a9`
 * `cortex-a53`
 * `cortex-r5`
 * `microblaze`
 
-Main Target
-~~~~~~~~~~~
+=== Main Target
 
 This project will add one main target type.
 
@@ -281,8 +265,7 @@ This project will add one main target type.
    projects -build -type app -name app
    ----
 
-Boost.Build Features
-~~~~~~~~~~~~~~~~~~~~
+=== Boost.Build Features
 
 The following Boost.Build features are used to configure the XSDK.
 Workspace.
@@ -290,8 +273,7 @@ Workspace.
 * `target-os`
 * `instruction-set`
 
-XSDK-related Features
-~~~~~~~~~~~~~~~~~~~~~
+=== XSDK-related Features
 
 Boost.Build will generally configure the board-support package given
 Boost.Build features.  These features can be overridden using the
@@ -333,8 +315,7 @@ following toolset flags.
    This feature assigns an application to run on a particular
    processor on the SoC, defaulting to 0.
 
-Testing
--------
+== Testing
 
 There are several test projects in the `test` directory.  In order
 to run these tests and also allow `b2 --help xsdk` to work, set the
@@ -351,8 +332,7 @@ BOOST_BUILD_PATH=$(pwd)
 set BOOST_BUILD_PATH=C:\Path\To\Project\Root
 ----
 
-`zcu102-empty`
-~~~~~~~~~~~~~~~~
+=== `zcu102-empty`
 
 This project is based on the "Empty Application" XSDK application
 template and allows building within any supported `<target-os>elf`
@@ -372,8 +352,7 @@ cd test/zcu102-empty && b2 --verbose-test -j 8
 cd test/zcu102-empty && b2 --verbose-test -j 8 variant=release target-os=freertos instruction-set=cortex-a53
 ----
 
-`zcu102-hello-freertos`
-~~~~~~~~~~~~~~~~~~~~~~~
+=== `zcu102-hello-freertos`
 
 This project is based on the "FreeRTOS Hello World" XSDK application
 template for `<target-os>freertos` and allows building within any
@@ -393,8 +372,7 @@ cd test/zcu102-empty && b2 --verbose-test -j 8
 cd test/zcu102-empty && b2 --verbose-test -j 8 variant=release instruction-set=cortex-a53
 ----
 
-`zcu102-rpc-demo`
-~~~~~~~~~~~~~~~~~
+=== `zcu102-rpc-demo`
 
 This project is based on the "OpenAMP RPC Demo" XSDK application
 template for `<target-os>freertos` and
