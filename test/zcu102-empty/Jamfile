@@ -1,0 +1,26 @@
+project
+  : default-build
+    <target-os>elf
+
+    <instruction-set>cortex-r5
+  ;
+
+xsdkws ws
+  : # sources
+    $(hdf)
+  : # requirements
+    <link>static
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe empty
+  : # sources
+    empty.cpp
+
+    ws
+  : # requirements
+    <link>static
+  : # default-build
+  : # usage-requirements
+  ;

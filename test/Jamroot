@@ -1,3 +1,5 @@
+import ../xsdk ;
+
 project
   : requirements
     <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
@@ -6,8 +8,12 @@ project
     <instruction-set>microblaze:<toolset>gcc-7xilinxmicroblaze
   ;
 
+local xsdk-root = [ xsdk.root ] ;
+
+path-constant hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
+
 build-project configure ;
 
-build-project zcu102 ;
-build-project zcu102-hello ;
+build-project zcu102-empty ;
+build-project zcu102-hello-freertos ;
 build-project zcu102-rpc-demo ;

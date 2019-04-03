@@ -1,15 +1,9 @@
-import ../../xsdk ;
+project
+  : default-build
+    <instruction-set>cortex-r5
+  ;
 
-local xsdk-root = [ xsdk.root ] ;
-
-local hdf = $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
-
-if ! $(xsdk-root)
-{
-  errors.user-error "The XSDK root is not defined, so the HDF file is not available." ;
-}
-
-# @todo add more configurations
+# @todo add more configurations for freertos
 xsdkws ws
   : # sources
     $(hdf)
@@ -23,7 +17,7 @@ xsdkws ws
   : # usage-requirements
   ;
 
-exe example
+exe hello
   : # sources
     hello.cpp
 
