@@ -11,6 +11,8 @@ xsdkws ws
   : # requirements
     <target-os>freertos
 
+    <link>static
+
     <xsdk-template>"FreeRTOS Hello World"
   : # default-build
   : # usage-requirements
@@ -23,6 +25,8 @@ exe example
     ws
   : # requirements
     <target-os>freertos
+
+    <link>static
   : # default-build
   : # usage-requirements
   ;
