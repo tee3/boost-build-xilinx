@@ -258,6 +258,10 @@ class ws-generator : generator
       }
     }
 
+    # @todo should be in gcc when elf, freertos
+    ps = [ $(ps).add-raw <linkflags>-lgcc ] ;
+    ps = [ $(ps).add-raw <linkflags>-lc ] ;
+
     # add properties from createapp
 
     local defines = [ instruction-set-to-defines $(instruction-set) ] ;
@@ -368,22 +372,17 @@ class ws-generator : generator
     {
       local translated-l = [ xsdk-library-to-library $(l) ] ;
 
-      t = [ class.new searched-lib-target $(translated-l) : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target $(bsp-dir)/lib/$(translated-l) : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
     if [ $(property-set).get <target-os> ] = freertos
     {
-      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+      t = [ class.new searched-lib-target $(bsp-dir)/lib/freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
-    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-
-    t = [ class.new searched-lib-target gcc : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
-    t = [ class.new searched-lib-target c : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
+    t = [ class.new searched-lib-target $(bsp-dir)/lib/xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
     return $(virtual-targets) ;
