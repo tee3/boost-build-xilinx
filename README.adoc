@@ -171,14 +171,14 @@ within the Xilinx XSDK.
 
 === Target Operating Systems
 
-`elf`
+`elf`::
 
    The `standalone` Xilinx operating system.
 
    Note that `elf` is the standard Boost.Build name for a bare-metal
    program.
 
-`freertos`
+`freertos`::
 
    The FreeRTOS operating system.
 
@@ -198,7 +198,7 @@ within the Xilinx XSDK.
 
 This project will add one main target type.
 
-`xsdkbsp ( name : source : requirements * : default-build * : usage-requirements )`
+`xsdkbsp ( name : source : requirements * : default-build * : usage-requirements )`::
 
    This target will place an application named `app`, a
    board-support packaged named `bsp`, and a hardware definition
@@ -286,7 +286,7 @@ Boost.Build will generally configure the board-support package given
 Boost.Build features.  These features can be overridden using the
 following toolset flags.
 
-`xsdk-template`
+`xsdk-template`::
 
    This feature indicates the application template used to generate
    the application.  The application provides the linker script used
@@ -298,7 +298,7 @@ following toolset flags.
 
    This defaults to an empty application.
 
-`xsdk-configuration`
+`xsdk-configuration`::
 
    This feature provides information for configuring a board-support
    package.  A configuration is a string added to the end of the call
@@ -312,12 +312,12 @@ following toolset flags.
    configbps -bsp bsp STRING
    ----
 
-`xsdk-library`
+`xsdk-library`::
 
    This feature adds Xilinx libraries to the board-support package.
    These are the library names as described in the XSDK documentation.
 
-`xsdk-processor-id`
+`xsdk-processor-id`::
 
    This feature assigns an application to run on a particular
    processor on the SoC, defaulting to 0.
