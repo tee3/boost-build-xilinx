@@ -140,5 +140,5 @@ cd test/zcu102-rpc-demo && b2 --verbose-test -j 8 variant=release
 == Reference
 
 :leveloffset: +2:
-include::xsdk.adoc
+include::xsdk.jam[tag=doc]
 :leveloffset: -2:
