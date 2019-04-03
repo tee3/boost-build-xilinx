@@ -562,6 +562,7 @@ rule generate-print ( targets + : sources + : properties * )
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
   local ws-name = $(target:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
 
   local fpga-name = $(hdf-source:B) ;
 
@@ -580,7 +581,7 @@ rule generate-print ( targets + : sources + : properties * )
     ;
 
   # set the workspace
-  lines += "run-checked setws -switch $(ws)" ;
+  lines += "run-checked setws -switch $(ws-absolute)" ;
 
   # repo
   # @todo do a regexp-based parse
@@ -721,6 +722,7 @@ rule generate-run ( targets + : sources + : properties * )
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
   local ws-name = $(target:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws-absolute = [ path.root $(ws) [ path.pwd ] ] ;
 
   local fpga-name = $(hdf-source:B) ;
 
@@ -743,7 +745,7 @@ rule generate-run ( targets + : sources + : properties * )
   lines +=
     "set program [file normalize [lindex argv 0]"
 
-    "set ws [file normalize $(ws)]"
+    "set ws [file normalize $(ws-absolute)]"
 
     "set hdf [file normalize [file join $ws system.hdf]]"
     "set bit [file normalize [file join $ws $(fpga-name:S=.bit)]]]"
