@@ -173,12 +173,15 @@ using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-x
 The following Boost.Build features are used to configure the XSDK.
 Workspace.
 
-== Target Operating Systems (`<target-os>`)
+If Boost.Build does not support a required value for a feature, the
+`xsdk` tool will extend the feature with the additional values.
+
+== `<target-os>` - the target operating system
 
 * `elf` - The `standalone` Xilinx operating system.
 * `freertos` - The FreeRTOS operating system.
 
-== Instruction Sets (`<instruction-set>`)
+== `<instruction-set>` - the instruction set or processor
 
 * `cortex-a9` - Cortex-A9
 * `cortex-a53` - Cortex-A53
