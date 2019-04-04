@@ -131,7 +131,8 @@ cd test/zcu102-rpc-demo && b2 --verbose-test -j 8 variant=release
 
 ## Reference
 
-See the [module](xsdk.jam) for the documentation.
+See the [module](xsdk.jam) for the user manual and reference
+documentation.
 
 The documentation is in AsciiDoc format in a form that can be used by
 the Boost.Build project documentation.
