@@ -1,3 +1,3 @@
-import ../../xsdk ;
+import xsdk ;
 
 echo "XSDK Root: " [ xsdk.root ] ;
