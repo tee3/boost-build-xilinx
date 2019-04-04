@@ -16,9 +16,10 @@ xsdkws ws
   : # usage-requirements
   ;
 
-exe rpc-demo
+lib libplatform
   : # sources
-    rpc_demo.c
+    rpc_demo_app.c
+    rpc_demo_app.h
     rpmsg-rpc-demo.h
 
     helper.c
@@ -28,6 +29,26 @@ exe rpc-demo
 
     rsc_table.c
     rsc_table.h
+
+    ws
+  : # requirements
+    <target-os>freertos
+
+    <link>static
+
+    <instruction-set>cortex-r5
+
+    <include>.
+  : # default-build
+  : # usage-requirements
+    <include>.
+  ;
+
+exe rpc-demo
+  : # sources
+    rpc_demo.c
+
+    libplatform
 
     ws
   : # requirements
