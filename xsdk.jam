@@ -48,81 +48,6 @@ Boost.Build will include the XSDK location and version as well as the
 application templates, operating systems, libraries, and drivers
 supported by the version of the tool configured.
 
-== Targets
-
-This tool provides a top-level target type named `xsdkws` that
-generates an XSDK Workspace as described above for supported target
-operating systems, processors, and configuration options.
-
-The generates the workspace as well as several supporting XSCT
-scripts.
-
-See the Reference section for more information.
-
-== Toolsets
-
-Note that in order to choose the correct toolset, the toolset should
-be made conditional on the `instruction-set` in the build system.
-One approach for doing this would be to set project requirements in
-the Jamroot.  This is required because the `toolset` feature cannot
-set in `usage-requirements`.
-
-.`Jamroot`
-[source,jam]
-----
-project
-  : requirements
-    <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
-    <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
-
-    <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
-
-    <instruction-set>microblaze:<toolset>gcc-7xilinxmicroblaze
-  ;
-----
-
-.`project-config.jam`
-[source,jam]
-----
-using xsdk ;
-
-local xsdk-root = [ xsdk.root ] ;
-
-using gcc : 7xilinxaarch32 : $(xsdk-root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
-using gcc : 7xilinxaarch64 : $(xsdk-root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
-
-using gcc : 7xilinxarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
-
-using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
-----
-
-== Suported FPGA
-
-* Zynq UltraScale+ MPSoC
-* Zynq 7000 SoC
-
-== Toolsets
-
-This module supports the processor-specific `gcc` toolsets delivered
-within the Xilinx XSDK.
-
-== Target Operating Systems
-
-* `elf` - The `standalone` Xilinx operating system.
-* `freertos` - The FreeRTOS operating system.
-
-== Architectures
-
-* `arm` - The ARM architecture.
-* `microblaze` - The Microblaze architecture.
-
-== Instruction Sets
-
-* `cortex-a9` - Cortex-A9
-* `cortex-a53` - Cortex-A53
-* `cortex-r5` - Cortex-R5
-* `microblaze` - Microblaze
-
 == Main Target
 
 This project will add one main target type named `xsdkws`.
@@ -198,13 +123,67 @@ createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -pro
 projects -build -type app -name app
 ----
 
+== Suported FPGA
+
+* Zynq UltraScale+ MPSoC
+* Zynq 7000 SoC
+
+== Toolsets
+
+This module supports the processor-specific `gcc` toolsets delivered
+within the Xilinx XSDK.
+
+Note that in order to choose the correct toolset, the toolset should
+be made conditional on the `instruction-set` in the build system.
+One approach for doing this would be to set project requirements in
+the Jamroot.  This is required because the `toolset` feature cannot
+set in `usage-requirements`.
+
+.`Jamroot`
+[source,jam]
+----
+project
+  : requirements
+    <instruction-set>cortex-a9:<toolset>gcc-7xilinxaarch32
+    <instruction-set>cortex-a53:<toolset>gcc-7xilinxaarch64
+
+    <instruction-set>cortex-r5:<toolset>gcc-7xilinxarmr5
+
+    <instruction-set>microblaze:<toolset>gcc-7xilinxmicroblaze
+  ;
+----
+
+.`project-config.jam`
+[source,jam]
+----
+using xsdk ;
+
+local xsdk-root = [ xsdk.root ] ;
+
+using gcc : 7xilinxaarch32 : $(xsdk-root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-g++ ;
+using gcc : 7xilinxaarch64 : $(xsdk-root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-g++ ;
+
+using gcc : 7xilinxarmr5 : $(xsdk-root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-g++ ;
+
+using gcc : 7xilinxmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+----
+
 == Boost.Build Features
 
 The following Boost.Build features are used to configure the XSDK.
 Workspace.
 
-* `target-os`
-* `instruction-set`
+== Target Operating Systems (`<target-os>`)
+
+* `elf` - The `standalone` Xilinx operating system.
+* `freertos` - The FreeRTOS operating system.
+
+== Instruction Sets (`<instruction-set>`)
+
+* `cortex-a9` - Cortex-A9
+* `cortex-a53` - Cortex-A53
+* `cortex-r5` - Cortex-R5
+* `microblaze` - Microblaze
 
 == XSDK-related Features
 
