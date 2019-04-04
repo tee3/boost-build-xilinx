@@ -383,11 +383,13 @@ rule init ( version ? : command * : options * )
   }
 }
 
+# Return XSDK root directory.
 rule root ( )
 {
   return $(root) ;
 }
 
+# Generator for an XSDK Workspace.
 class ws-generator : generator
 {
   import errors ;
@@ -624,7 +626,9 @@ class ws-generator : generator
     return $(virtual-targets) ;
   }
 
-  rule target-os-to-xsdk ( value )
+  # Return the name of the XSDK operating system indicated by the
+  # <target-os> represented by value.
+  local rule target-os-to-xsdk ( value )
   {
     assert.in $(value) : [ feature.values <target-os> ] ;
 
@@ -640,7 +644,10 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  rule instruction-set-to-xsdk ( value )
+  # Return the name of the XSDK processor, which is the same as an
+  # instruction set, indicated by the <instruction-set> represented by
+  # value.
+  local rule instruction-set-to-xsdk ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
@@ -657,7 +664,9 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  rule instruction-set-to-defines ( value )
+  # Return the preprocessor definitions required by the
+  # <instruction-set> represented by value.
+  local rule instruction-set-to-defines ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
@@ -670,7 +679,11 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  rule instruction-set-to-toolset ( value )
+  # Return the XSDK <toolset> as required by the <instruction-set>
+  # represented by value.
+  #
+  # @todo this should take into account the XSDK version.
+  local rule instruction-set-to-toolset ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
@@ -686,7 +699,12 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  rule xsdk-library-to-library ( value )
+  # Return the <library> as required by the <xsdk-library> represented
+  # by value.
+  #
+  # The <xsdk-library> names within the XSDK are not the same as the
+  # filenames produced by the XSDK.
+  local rule xsdk-library-to-library ( value )
   {
     local tmp = $(value) ;
     switch $(tmp)
@@ -704,6 +722,7 @@ class ws-generator : generator
 # @todo loop and generate many generators for each supported configuration?
 generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN H LIB BIT MSS TCL : <toolset>gcc <link>static ] ;
 
+# Generate an XSCT script to build the XSDK Workspace.
 rule generate-build ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
@@ -783,6 +802,8 @@ rule generate-build ( targets + : sources + : properties * )
   print.text "" ;
 }
 
+# Generate an XSCT script to print the current and available
+# configurations options of an XSDK Workspace.
 rule generate-print ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
@@ -944,6 +965,8 @@ rule generate-print ( targets + : sources + : properties * )
   print.text "" ;
 }
 
+# Generate an XSCT script to run a program built with the XSDK
+# Workspace.
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
@@ -1056,11 +1079,20 @@ else
   RMDIR = rm -rf ;
 }
 
+# Coupled with the actions of the same name, runs the script to build
+# the XSDK Workspace.
+rule generate-ws ( targets + : sources + : properties * )
+{
+  assert.equal [ sequence.length $(targets) ] : 1 ;
+  assert.equal [ sequence.length $(sources) ] : 1 ;
+}
+
 actions generate-ws
 {
   $(RMDIR) $(<[1]:S=.xsdkws) && "$(.xsct)" "$(>[1])" && $(TOUCH) "$(<[1])"
 }
 
+# Generates the targets contained in the XSDK Workspace.
 rule ws-complete ( targets + : sources + : properties * )
 {
   # assert.equal [ sequence.length $(targets) ] : 1 ;
