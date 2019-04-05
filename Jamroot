@@ -1,0 +1,3 @@
+using asciidoctor ;
+
+html xsdk : xsdk.adoc ;

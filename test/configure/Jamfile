@@ -1,0 +1,4 @@
+import xsdk ;
+
+echo "XSDK Root: " [ xsdk.root ] ;
+echo "XSDK Version: " [ xsdk.version ] ;

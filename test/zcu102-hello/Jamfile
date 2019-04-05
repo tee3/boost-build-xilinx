@@ -1,0 +1,35 @@
+project
+  : default-build
+    <target-os>elf
+    <target-os>freertos
+
+    <instruction-set>cortex-r5
+    <instruction-set>cortex-a53
+  ;
+
+# @todo add more configurations for freertos
+xsdkws ws
+  : # sources
+    $(zcu102-hdf)
+  : # requirements
+    <link>static
+
+    <target-os>elf:<xsdk-template>"Hello World"
+    <target-os>freertos:<xsdk-template>"FreeRTOS Hello World"
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe hello
+  : # sources
+    helloworld.c
+    platform.c
+    platform_config.h
+    platform.h
+
+    ws
+  : # requirements
+    <link>static
+  : # default-build
+  : # usage-requirements
+  ;
