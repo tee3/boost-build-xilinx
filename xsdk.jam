@@ -88,7 +88,7 @@ file specified in `$(source)`.
 
 [source, tcl]
 ----
-createhw -name hw -hwspec $(source:G=)
+createhw -name hw -hwspec $(source)
 ----
 
 Generate and build a board-support package (`bsp`) from the hardware
@@ -893,7 +893,9 @@ rule generate-build ( targets + : sources + : properties * )
   local ws-name = $(target:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
 
-  local hdf = $(source:G=) ;
+  local hdf-dir = [ on $(source) return $(LOCATE) ] ;
+  local hdf-name = $(source:G=) ;
+  local hdf = $(hdf-dir)/$(hdf-name) ;
 
   local xsdk-os = [ feature.get-values <xsdk-os> : $(properties) ] ;
   local xsdk-instruction-set = [ feature.get-values <xsdk-instruction-set> : $(properties) ] ;
