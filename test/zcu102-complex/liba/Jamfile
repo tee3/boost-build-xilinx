@@ -1,0 +1,1 @@
+lib a : a.hpp a.cpp : <include>. : : <include>. ;

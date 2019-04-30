@@ -128,6 +128,23 @@ cd test/zcu102-rpc-demo && b2 --verbose-test -j 8
 cd test/zcu102-rpc-demo && b2 --verbose-test -j 8 variant=release
 ```
 
+### `zcu102-complex`
+
+This project is based on the "Empty Application" XSDK application
+template builds all valid `<target-os>` and `<instruction-set>`.  It
+uses a library `a` that knows nothing about the Xilinx SDK.
+
+Any compatible Boost.Build features can also be specified on the
+command line.
+
+```shell
+cd test/zcu102-complex && b2 --verbose-test -j 8
+```
+
+```shell
+cd test/zcu102-complex && b2 --verbose-test -j 8 variant=release target-os=freertos instruction-set=cortex-a53
+```
+
 ## Reference
 
 See the [module](xsdk.jam) for the user manual and reference
