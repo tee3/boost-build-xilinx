@@ -893,8 +893,6 @@ rule generate-build ( targets + : sources + : properties * )
   local ws-name = $(target:G=) ;
   local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
 
-  local hdf = $(source:G=) ;
-
   local hdf-dir = [ on $(source) return $(LOCATE) ] ;
   local hdf-name = $(source:G=) ;
 
