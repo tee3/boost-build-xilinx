@@ -1,3 +1,5 @@
+path-constant root : ../.. ;
+
 # @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
@@ -39,7 +41,7 @@ exe rpc-demo
 
     <dependency>ws
 
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
+    <linkflags>"-Wl,-T -Wl,$(root)/test/zcu102-rpc-demo/lscript.ld"
   : # default-build
   : # usage-requirements
   ;
