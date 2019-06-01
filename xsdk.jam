@@ -196,6 +196,8 @@ class ws-generator : generator
   # Workspace.
   rule run ( project name ? : property-set : sources * )
   {
+    assert.equal [ sequence.length $(sources) ] : 1 ;
+
     property-set = [ $(property-set).add-raw <relevant>toolset ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-language ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-processor-prefix ] ;
