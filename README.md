@@ -31,6 +31,8 @@ which is how Boost.Build matches.
 # Jamfile
 import xsdk ;
 
+# @todo for now this must be explicit
+explicit ws ;
 xsdkws ws
  : # sources
     example.hdf
