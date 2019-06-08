@@ -932,8 +932,8 @@ rule generate-run ( targets + : sources + : properties * )
 
     "set ws [file normalize $(ws-absolute)]"
 
-    "set hdf [file normalize [file join $ws system.hdf]]"
-    "set bit [file normalize [file join $ws $(fpga-name:S=.bit)]]]"
+    "set hdf [file join $ws system.hdf]"
+    "set bit [glob -directory $ws *.bit]"
 
     "set jtag_cable_name \"*\""
 
