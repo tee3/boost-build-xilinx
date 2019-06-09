@@ -196,6 +196,8 @@ class ws-generator : generator
   # Workspace.
   rule run ( project name ? : property-set : sources * )
   {
+    assert.equal [ sequence.length $(sources) ] : 1 ;
+
     property-set = [ $(property-set).add-raw <relevant>toolset ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-language ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-processor-prefix ] ;
@@ -932,8 +934,8 @@ rule generate-run ( targets + : sources + : properties * )
 
     "set ws [file normalize $(ws-absolute)]"
 
-    "set hdf [file normalize [file join $ws system.hdf]]"
-    "set bit [file normalize [file join $ws $(fpga-name:S=.bit)]]]"
+    "set hdf [file join $ws system.hdf]"
+    "set bit [glob -directory $ws *.bit]"
 
     "set jtag_cable_name \"*\""
 

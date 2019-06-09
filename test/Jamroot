@@ -17,8 +17,8 @@ if ! $(xsdk-root)
   errors.user-error "The XSDK root is not set." ;
 }
 
-path-constant zc702-hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZC702_hw_platform/system.hdf ;
-path-constant zcu102-hdf : $(xsdk-root)/data/embeddedsw/lib/hwplatform_templates/ZCU102_hw_platform/system.hdf ;
+path-constant zc702-hdf : $(xsdk-root)/data/embeddedsw/lib/spm_templates/SPM_ZC_702_HwPlatform/system.hdf ;
+path-constant zcu102-hdf : $(xsdk-root)/data/embeddedsw/lib/spm_templates/SPM_ZCU_102_HwPlatform/system.hdf ;
 
 build-project configure ;
 
