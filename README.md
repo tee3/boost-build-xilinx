@@ -64,8 +64,7 @@ exe example
 
 ## Documentation
 
-The documentation is contained within the Boost.Build module file
-(*e.g.*, `xsdk.jam`) using inline documentation based on AsciiDoc.  A
+The documentation is based on AsciiDoc and is contained in an within a
 top-level document brings in documentation from each module.
 
 Run the following command to build an HTML version of the
@@ -168,7 +167,7 @@ cd test/zcu102-rpc-demo && b2 --verbose-test -j 8 variant=release
 
 ## Reference
 
-See the [module](xsdk.jam) for the user manual and reference
+See the [documentation](xsdk.adoc) for the user manual and reference
 documentation.
 
 The documentation is in AsciiDoc format in a form that can be used by
