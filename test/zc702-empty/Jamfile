@@ -9,6 +9,8 @@ project
     <xsdk-processor-id>1
   ;
 
+# @todo for now this must be explicit
+explicit ws_c ;
 xsdkws ws_c
   : # sources
     $(zc702-hdf)
@@ -20,6 +22,8 @@ xsdkws ws_c
   : # usage-requirements
   ;
 
+# @todo for now this must be explicit
+explicit ws_cpp ;
 xsdkws ws_cpp
   : # sources
     $(zc702-hdf)
@@ -34,12 +38,12 @@ xsdkws ws_cpp
 exe empty_c
   : # sources
     empty_c.c
-
-    ws_c
   : # requirements
     <link>static
 
     <xsdk-language>c
+
+    <dependency>ws_c
   : # default-build
   : # usage-requirements
   ;
@@ -47,12 +51,12 @@ exe empty_c
 exe empty_cpp
   : # sources
     empty_cpp.cpp
-
-    ws_cpp
   : # requirements
     <link>static
 
     <xsdk-language>c++
+
+    <dependency>ws_cpp
   : # default-build
   : # usage-requirements
   ;

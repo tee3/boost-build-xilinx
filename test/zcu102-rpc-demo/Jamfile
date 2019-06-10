@@ -1,3 +1,5 @@
+# @todo for now this must be explicit
+explicit ws ;
 xsdkws ws
   : # sources
     $(zcu102-hdf)
@@ -29,8 +31,6 @@ lib libplatform
 
     rsc_table.c
     rsc_table.h
-
-    ws
   : # requirements
     <target-os>freertos
 
@@ -39,6 +39,8 @@ lib libplatform
     <instruction-set>cortex-r5
 
     <include>.
+
+    <dependency>ws
   : # default-build
   : # usage-requirements
     <include>.
@@ -49,14 +51,14 @@ exe rpc-demo
     rpc_demo.c
 
     libplatform
-
-    ws
   : # requirements
     <target-os>freertos
 
     <link>static
 
     <instruction-set>cortex-r5
+
+    <dependency>ws
   : # default-build
   : # usage-requirements
   ;
@@ -66,14 +68,14 @@ exe rpc-demo-cpp
     rpc_demo_cpp.cpp
 
     libplatform
-
-    ws
   : # requirements
     <target-os>freertos
 
     <link>static
 
     <instruction-set>cortex-r5
+
+    <dependency>ws
   : # default-build
   : # usage-requirements
   ;

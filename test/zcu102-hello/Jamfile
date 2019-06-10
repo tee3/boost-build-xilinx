@@ -8,6 +8,8 @@ project
   ;
 
 # @todo add more configurations for freertos
+# @todo for now this must be explicit
+explicit ws ;
 xsdkws ws
   : # sources
     $(zcu102-hdf)
@@ -26,10 +28,10 @@ exe hello
     platform.c
     platform_config.h
     platform.h
-
-    ws
   : # requirements
     <link>static
+
+    <dependency>ws
   : # default-build
   : # usage-requirements
   ;
