@@ -4,15 +4,35 @@ pipeline {
     }
 
     environment {
+        boost_version = '1.70.0'
         SSL_CERT_FILE = '/etc/ssl/certs/inradar-ca.pem'
         XILINXD_LICENSE_FILE = '2100@license-server-0.eastus.inradar.net'
     }
 
     stages {
+        stage('Setup') {
+            steps {
+                sh '''
+                boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
+
+                mkdir -p lib
+                cd lib
+                wget -q https://sourceforge.net/projects/boost/files/boost/${boost_version}/boost_${boost_version_name}.tar.gz
+                tar xfz boost_${boost_version_name}.tar.gz
+                cd boost_${boost_version_name}
+                ./bootstrap.sh
+                '''
+            }
+        }
         stage('Manual') {
             steps {
                 /// @todo asciidoctor is not installed
-                // sh 'bjam --verbose-test -j 8'
+                // sh '''
+                // boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
+                //
+                // export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
+                // $(pwd)/lib/boost_${boost_version_name}/bjam -j 8 -a
+                // '''
                 //
                 // publishHTML([allowMissing: false,
                 //              alwaysLinkToLastBuild: true,
@@ -26,17 +46,22 @@ pipeline {
         }
         stage('Documentation') {
             steps {
-                /// @todo requires a newer Boost.Build
-                // sh 'BOOST_BUILD_PATH=$(pwd) && bjam --help xsdk'
-                sh 'true'
+                sh '''
+                boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
+
+                export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
+                $(pwd)/lib/boost_${boost_version_name}/bjam --help xsdk
+                '''
             }
         }
         stage('Test') {
             steps {
                 sh '''#!/bin/bash
+                boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
+
                 source /opt/Xilinx/SDK/2018.3/settings64.sh
-                export BOOST_BUILD_PATH=$(pwd)
-                cd test && bjam --verbose-test -j 8
+                export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
+                cd test && $(pwd)/../lib/boost_${boost_version_name}/bjam --verbose-test -j 8 -a
                 '''
             }
         }
