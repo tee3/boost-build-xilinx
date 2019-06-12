@@ -539,8 +539,7 @@ class ws-generator : generator
     # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
     # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
 
-    # @todo these should be done in gcc.jam really
-    # @todo support specific instruction-sets better
+    # @todo these should really be done in each toolset (e.g. gcc.jam)
     # @todo figure out the tool chooses this or use the app and ask after it's built
     switch $(instruction-set)
     {
@@ -799,9 +798,6 @@ class ws-generator : generator
 
   # Return the prefix used in the path to the processor in the
   # board-support package.
-  #
-  # @todo this is probably not actually right, but it is not clear
-  # where it comes from.
   rule instruction-set-to-prefix ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
@@ -878,7 +874,6 @@ class ws-generator : generator
 }
 
 # @todo loop and generate many generators for each supported configuration?
-###generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN H LIB BIT MSS TCL : <toolset>gcc <link>static ] ;
 generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN BIT MSS TCL : <toolset>gcc <link>static ] ;
 
 # Generate an XSCT script to build the XSDK Workspace.
@@ -1154,6 +1149,11 @@ rule generate-print ( targets + : sources + : properties * )
 
 # Generate an XSCT script to run a program built with the XSDK
 # Workspace.
+#
+# @todo The generated run.tcl probably only works for the Cortex-R5.
+# There is significant work to get it working for all possible
+# targets.  The best approach (which may not be possible) would be to
+# have the xsct tool generate the run.tcl file.
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
