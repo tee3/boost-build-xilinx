@@ -1153,6 +1153,11 @@ rule generate-print ( targets + : sources + : properties * )
 
 # Generate an XSCT script to run a program built with the XSDK
 # Workspace.
+#
+# @todo The generated run.tcl probably only works for the Cortex-R5.
+# There is significant work to get it working for all possible
+# targets.  The best approach (which may not be possible) would be to
+# have the xsct tool generate the run.tcl file.
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
