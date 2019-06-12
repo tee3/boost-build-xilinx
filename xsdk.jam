@@ -539,8 +539,7 @@ class ws-generator : generator
     # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
     # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
 
-    # @todo these should be done in gcc.jam really
-    # @todo support specific instruction-sets better
+    # @todo these should really be done in each toolset (e.g. gcc.jam)
     # @todo figure out the tool chooses this or use the app and ask after it's built
     switch $(instruction-set)
     {
@@ -799,9 +798,6 @@ class ws-generator : generator
 
   # Return the prefix used in the path to the processor in the
   # board-support package.
-  #
-  # @todo this is probably not actually right, but it is not clear
-  # where it comes from.
   rule instruction-set-to-prefix ( value )
   {
     assert.in $(value) : [ feature.values <instruction-set> ] ;
