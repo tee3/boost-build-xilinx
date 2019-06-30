@@ -45,6 +45,8 @@ exe empty_c
     <xsdk-language>c
 
     <dependency>ws_c
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
   ;
@@ -58,6 +60,8 @@ exe empty_cpp
     <xsdk-language>c++
 
     <dependency>ws_cpp
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
   ;

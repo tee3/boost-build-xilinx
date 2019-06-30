@@ -32,6 +32,8 @@ exe hello
     <link>static
 
     <dependency>ws
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
   ;
