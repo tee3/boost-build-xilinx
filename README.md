@@ -34,34 +34,34 @@ import xsdk ;
 # @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
- : # sources
+  : # sources
     example.hdf
- : # requirements
-   <target-os>elf
+  : # requirements
+    <target-os>elf
 
-   <link>static
+    <link>static
 
-   <instruction-set>cortex-r5
+    <instruction-set>cortex-r5
 
-   <xsdk-configuration>"sleep_time psu_ttc_3"
- : # default-build
- : # usage-requirements
- ;
+    <xsdk-configuration>"sleep_time psu_ttc_3"
+  : # default-build
+  : # usage-requirements
+  ;
 
 exe example
- : # sources
-   example.cpp
+  : # sources
+    example.cpp
 
-   ws
- : # requirements
-   <target-os>elf
+    ws
+  : # requirements
+    <target-os>elf
 
-   <link>static
+    <link>static
 
-   <instruction-set>cortex-r5
- : # default-build
- : # usage-requirements
- ;
+    <instruction-set>cortex-r5
+  : # default-build
+  : # usage-requirements
+  ;
 ```
 
 ## Documentation
