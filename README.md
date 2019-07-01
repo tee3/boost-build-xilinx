@@ -19,50 +19,10 @@ hardware.
 
 ## Example
 
-The following is an example where a XSDK workspace named `ws` is
-created from a hardware specification in `example.hdf` and used, along
-with a C++ source file named `example.cpp` to create an application
-named `example`.
+See the [user manual](xsdk.adoc) for an example.
 
-Note below that the requirements of both `ws` and `example` match,
-which is how Boost.Build matches.
-
-```jam
-# Jamfile
-import xsdk ;
-
-# @todo for now this must be explicit
-explicit ws ;
-xsdkws ws
- : # sources
-    example.hdf
- : # requirements
-   <target-os>elf
-
-   <link>static
-
-   <instruction-set>cortex-r5
-
-   <xsdk-configuration>"sleep_time psu_ttc_3"
- : # default-build
- : # usage-requirements
- ;
-
-exe example
- : # sources
-   example.cpp
-
-   ws
- : # requirements
-   <target-os>elf
-
-   <link>static
-
-   <instruction-set>cortex-r5
- : # default-build
- : # usage-requirements
- ;
-```
+The user manual is readable online, but the entire manual (including
+generated reference documentation) must be built to be viewed.
 
 ## Documentation
 
