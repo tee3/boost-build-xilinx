@@ -21,8 +21,6 @@ xsdkws ws
 exe rpc-demo
   : # sources
     rpc_demo.c
-    rpc_demo_app.c
-    rpc_demo_app.h
     rpmsg-rpc-demo.h
 
     helper.c
