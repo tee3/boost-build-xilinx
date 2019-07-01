@@ -1,5 +1,17 @@
 import xsdk ;
 
+project
+  : requirements
+    # @todo workaround for features unknown to Boost.Build
+    <instruction-set>cortex-a9:<cflags>-mcpu=cortex-a9
+    <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
+    <instruction-set>cortex-a9:<cflags>-mfpu=vfpv3
+
+    <instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5
+    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfpu=vfpv3-d16
+    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfloat-abi=hard
+  ;
+
 using xsdk ;
 
 local xsdk-root = [ xsdk.root ] ;
