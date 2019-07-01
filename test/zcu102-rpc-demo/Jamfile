@@ -66,22 +66,3 @@ exe rpc-demo
   : # default-build
   : # usage-requirements
   ;
-
-exe rpc-demo-cpp
-  : # sources
-    rpc_demo_cpp.cpp
-
-    libplatform
-  : # requirements
-    <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5
-
-    <dependency>ws
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
-  ;
