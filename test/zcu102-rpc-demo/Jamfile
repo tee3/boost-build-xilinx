@@ -1,3 +1,5 @@
+path-constant root : ../.. ;
+
 # @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
@@ -18,10 +20,9 @@ xsdkws ws
   : # usage-requirements
   ;
 
-lib libplatform
+exe rpc-demo
   : # sources
-    rpc_demo_app.c
-    rpc_demo_app.h
+    rpc_demo.c
     rpmsg-rpc-demo.h
 
     helper.c
@@ -38,50 +39,9 @@ lib libplatform
 
     <instruction-set>cortex-r5
 
-    <include>.
-
     <dependency>ws
 
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
-    <include>.
-  ;
-
-exe rpc-demo
-  : # sources
-    rpc_demo.c
-
-    libplatform
-  : # requirements
-    <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5
-
-    <dependency>ws
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
-  ;
-
-exe rpc-demo-cpp
-  : # sources
-    rpc_demo_cpp.cpp
-
-    libplatform
-  : # requirements
-    <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5
-
-    <dependency>ws
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
+    <linkflags>"-Wl,-T -Wl,$(root)/test/zcu102-rpc-demo/lscript.ld"
   : # default-build
   : # usage-requirements
   ;
