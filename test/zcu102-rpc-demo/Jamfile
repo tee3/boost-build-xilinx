@@ -41,6 +41,8 @@ lib libplatform
     <include>.
 
     <dependency>ws
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
     <include>.
@@ -59,6 +61,8 @@ exe rpc-demo
     <instruction-set>cortex-r5
 
     <dependency>ws
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
   ;
@@ -76,6 +80,8 @@ exe rpc-demo-cpp
     <instruction-set>cortex-r5
 
     <dependency>ws
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
   ;

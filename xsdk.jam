@@ -105,12 +105,12 @@ regenbsp -bsp bsp
 projects -build -type bsp -name bsp
 ----
 
-Generate and build an application (`app`) which provides a
-linker-command file and some options required to properly build an
-application.  This defaults to "Empty Application" if
-`<xsdk-template>` is not defined.  Neither the application template
-nor the application language is required, but can sometimes be useful
-to generate a program that can be used as the basis of your program.
+Generate and build an application (`app`) along with some options
+required to properly build an application.  This defaults to "Empty
+Application" if `<xsdk-template>` is not defined.  Neither the
+application template nor the application language is required, but can
+sometimes be useful to generate a program that can be used as the
+basis of your program.
 
 The build script will generate several additional applications for
 comparison.  Building these application is done as a reference to
@@ -217,8 +217,9 @@ following toolset flags.
 == `xsdk-template`
 
 This feature indicates the application template used to generate the
-application.  The application provides the linker script used by
-programs built with the XSDK Workspace.
+application.  The application provides a linker script that can be
+used by programs built with the XSDK Workspace and can be found on the
+library search path.
 
 The resulting files can be used to create or update the actual
 application code, but are not used when generating programs from the
@@ -626,7 +627,7 @@ class ws-generator : generator
 
     ps = [ $(ps).add-raw <define>$(defines) ] ;
 
-    ps = [ $(ps).add-raw <linkflags>"-Wl,-T -Wl,$(ws-dir)/app/src/lscript.ld" ] ;
+    ps = [ $(ps).add-raw <library-path>$(ws-dir)/app/src ] ;
 
     return $(ps) $(vts) ;
   }
