@@ -27,3 +27,4 @@ build-project zc702-empty ;
 build-project zcu102-empty ;
 build-project zcu102-hello ;
 build-project zcu102-rpc-demo ;
+build-project zcu102-complex ;

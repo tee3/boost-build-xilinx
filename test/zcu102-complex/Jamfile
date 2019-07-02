@@ -1,0 +1,44 @@
+project
+  : default-build
+    <target-os>elf
+    <target-os>freertos
+
+    <instruction-set>cortex-r5
+    <instruction-set>cortex-a53
+
+    <xsdk-processor-id>0
+    <xsdk-processor-id>1
+  ;
+
+# @todo for now this must be explicit
+explicit ws ;
+xsdkws ws
+  : # sources
+    $(zcu102-hdf)
+  : # requirements
+    <link>static
+
+    <xsdk-language>c++
+  : # default-build
+  : # usage-requirements
+  ;
+
+exe complex
+  : # sources
+    complex.cpp
+
+    h0.hpp
+    h0.cpp
+
+    liba//a
+  : # requirements
+    <link>static
+
+    <xsdk-language>c++
+
+    <dependency>ws
+
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
+  : # default-build
+  : # usage-requirements
+  ;
