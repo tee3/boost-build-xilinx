@@ -1104,6 +1104,7 @@ rule generate-print ( targets + : sources + : properties * )
   lines +=
     "# bsp"
     "puts \"[getos -bsp bsp]\""
+    "puts \"[configbsp -bsp bsp -os]\""
     "set os_parameters [list]"
     "foreach line [lrange [split [configbsp -bsp bsp -os] \"\\n\"] 3 end] {"
     "    if {[scan $line \"%s%s\" name value] != 2} then {"
