@@ -1,6 +1,13 @@
 pipeline {
     agent {
-        label 'xilinx-vivado-linux'
+        dockerfile {
+            label 'xilinx-vivado-linux'
+
+            registryUrl 'https://docker.inradar.net'
+            registryCredentialsId 'radar-docker-registry'
+            filename 'Dockerfile'
+            args '-v /etc/passwd:/etc/passwd --mount type=tmpfs,destination=/home/azureagent -v /opt/Xilinx:/opt/Xilinx -v /usr/local/share/ca-certificates/inradar-ca.crt:/usr/local/share/ca-certificates/inradar-ca.crt -v /etc/ssl/certs:/etc/ssl/certs -v /etc/ca-certificates.conf:/etc/ca-certificates.conf'
+        }
     }
 
     environment {
