@@ -59,7 +59,7 @@ of this project.
 UNIX:
 
 ```shell
-BOOST_BUILD_PATH=$(pwd)
+export BOOST_BUILD_PATH=$(pwd)
 ```
 
 Windows:
