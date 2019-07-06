@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage('Setup') {
+        stage('Install Boost') {
             steps {
                 sh '''
                 boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
