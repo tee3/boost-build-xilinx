@@ -3,7 +3,7 @@
 <!-- accompanying file LICENSE_1_0.txt or copy at -->
 <!-- http://www.boost.org/LICENSE_1_0.txt) -->
 
-# Xilinx Tools for Boost.Build
+# Boost.Build module for Xilinx
 
 ## Overview
 
