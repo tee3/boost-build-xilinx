@@ -5,7 +5,6 @@ pipeline {
 
     environment {
         boost_version = '1.70.0'
-        SSL_CERT_FILE = '/etc/ssl/certs/inradar-ca.pem'
         XILINXD_LICENSE_FILE = '2100@license-server-0.eastus.inradar.net'
     }
 
