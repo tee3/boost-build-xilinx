@@ -28,7 +28,7 @@ pipeline {
 
                 mkdir -p lib
                 cd lib
-                wget -q https://sourceforge.net/projects/boost/files/boost/${boost_version}/boost_${boost_version_name}.tar.gz
+                wget -q http://mirrors.inradar.net/yocto/downloads/boost_${boost_version_name}.tar.gz
                 tar xfz boost_${boost_version_name}.tar.gz
                 cd boost_${boost_version_name}
                 ./bootstrap.sh
