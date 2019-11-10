@@ -476,7 +476,18 @@ class ws-generator : generator
     property-set = [ $(property-set).add-raw <relevant>xsdk-processor-id ] ;
     property-set = [ $(property-set).add-raw <relevant>target-os ] ;
     property-set = [ $(property-set).add-raw <relevant>link ] ;
+    property-set = [ $(property-set).add-raw <relevant>architecture ] ;
     property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
+    property-set = [ $(property-set).add-raw <relevant>optimization ] ;
+    property-set = [ $(property-set).add-raw <relevant>profiling ] ;
+    property-set = [ $(property-set).add-raw <relevant>debug-symbols ] ;
+    property-set = [ $(property-set).add-raw <relevant>runtime-debugging ] ;
+    property-set = [ $(property-set).add-raw <relevant>inlining ] ;
+    property-set = [ $(property-set).add-raw <relevant>define ] ;
+    property-set = [ $(property-set).add-raw <relevant>include ] ;
+    property-set = [ $(property-set).add-raw <relevant>library-path ] ;
+    property-set = [ $(property-set).add-raw <relevant>cflags ] ;
+    property-set = [ $(property-set).add-raw <relevant>linkflags ] ;
 
     # @todo is dynamic linking possible?
 ####    if [ $(property-set).get <link> ] != static
