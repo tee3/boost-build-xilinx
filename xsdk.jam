@@ -1232,7 +1232,7 @@ rule generate-run ( targets + : sources + : properties * )
     "set ws [file normalize $(ws-absolute)]"
 
     "set hdf [file join $ws hw system.hdf]"
-    "set bit [glob -directory [file join $ws hw] *.bit]"
+    "set bit [glob -directory [file join $ws hw] *_cfg.bit]"
 
     "set jtag_cable_name \"*\""
 
