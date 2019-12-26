@@ -26,6 +26,7 @@ xsdkws ws
     <xsdk-language>c++
   : # default-build
   : # usage-requirements
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   ;
 
 exe complex
@@ -42,8 +43,4 @@ exe complex
     <xsdk-language>c++
 
     <dependency>ws
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
   ;

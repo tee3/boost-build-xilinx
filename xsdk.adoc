@@ -37,10 +37,9 @@ xsdkws ws
     <instruction-set>cortex-r5
 
     <xsdk-configuration>"sleep_time psu_ttc_3"
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
   : # default-build
   : # usage-requirements
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   ;
 
 exe example
@@ -54,8 +53,6 @@ exe example
     <link>static
 
     <instruction-set>cortex-r5
-  : # default-build
-  : # usage-requirements
   ;
 ----
 
