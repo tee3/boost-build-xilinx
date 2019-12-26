@@ -26,6 +26,7 @@ xsdkws ws_c
     <xsdk-language>c
   : # default-build
   : # usage-requirements
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   ;
 
 # @todo for now this must be explicit
@@ -39,6 +40,7 @@ xsdkws ws_cpp
     <xsdk-language>c++
   : # default-build
   : # usage-requirements
+    <linkflags>"-Wl,-T -Wl,lscript.ld"
   ;
 
 exe empty_c
@@ -50,10 +52,6 @@ exe empty_c
     <xsdk-language>c
 
     <dependency>ws_c
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
   ;
 
 exe empty_cpp
@@ -65,8 +63,4 @@ exe empty_cpp
     <xsdk-language>c++
 
     <dependency>ws_cpp
-
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  : # default-build
-  : # usage-requirements
   ;

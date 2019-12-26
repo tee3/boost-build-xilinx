@@ -8,11 +8,6 @@ import xsdk ;
 import errors ;
 
 project
-  : requirements
-    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
-    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
-    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
-    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
   : default-build
     <variant>debug
     <variant>release
