@@ -22,8 +22,6 @@ xsdkws ws
     $(zcu102-hdf)
   : # requirements
     <link>static
-
-    <xsdk-language>c++
   : # default-build
   : # usage-requirements
     <linkflags>"-Wl,-T -Wl,lscript.ld"
@@ -40,7 +38,7 @@ exe complex
   : # requirements
     <link>static
 
-    <xsdk-language>c++
-
     <dependency>ws
+
+    <linkflags>"-Wl,--start-group -Wl,-lstdc++ -Wl,--end-group"
   ;
