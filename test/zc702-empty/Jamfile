@@ -10,10 +10,6 @@ project
     <platform>elf--cortex-a9+vfpv3-softfp
     <platform>elf-arm-cortex-a9+vfpv3-hard
     <platform>elf-arm-cortex-a9+vfpv3-softfp
-    <platform>freertos--cortex-a9+vfpv3-hard
-    <platform>freertos--cortex-a9+vfpv3-softfp
-    <platform>freertos-arm-cortex-a9+vfpv3-hard
-    <platform>freertos-arm-cortex-a9+vfpv3-softfp
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1

@@ -699,10 +699,6 @@ class ws-generator : generator
 
     {
       local bsp-libraries = xil ;
-      if [ $(property-set).get <target-os> ] = freertos
-      {
-        bsp-libraries += freertos ;
-      }
       for local l in [ $(property-set).get <xsdk-library> ]
       {
         bsp-libraries += [ xsdk-library-to-library $(l) ] ;
@@ -857,12 +853,6 @@ class ws-generator : generator
 ###      virtual-targets += [ virtual-target.register $(t) ] ;
 ###    }
 ###
-###    if [ $(property-set).get <target-os> ] = freertos
-###    {
-###      t = [ class.new searched-lib-target freertos : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
-###      virtual-targets += [ virtual-target.register $(t) ] ;
-###    }
-###
 ###    t = [ class.new searched-lib-target xil : $(project) : $(shared) : $(bsp-dir)/lib : $(a) ] ;
 ###    virtual-targets += [ virtual-target.register $(t) ] ;
 
@@ -879,7 +869,7 @@ class ws-generator : generator
     switch $(value)
     {
       case elf : tmp = standalone ;
-      case freertos : tmp = freertos10_xilinx ;
+      case freertos : tmp = standalone ;
       case xilkernel : tmp = xilkernel ;
     }
 
@@ -1108,6 +1098,10 @@ rule generate-build ( targets + : sources + : properties * )
       lines += "configbsp -bsp bsp -append $(bsp-fields) \"$(t)\"" ;
     }
   }
+  if <define>UNDEFINE_FILE_OPS in $(properties)
+  {
+    lines += "configbsp -bsp bsp -append $(bsp-fields) \"-DUNDEFINE_FILE_OPS\"" ;
+  }
 
   # print the actual BSP configuration
   lines += "puts $configuration_actual_f \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
@@ -1140,10 +1134,6 @@ rule generate-build ( targets + : sources + : properties * )
   # create a dummy application for the linker file
   local empty-template = "Empty Application" ;
   local hello-template = "Hello World" ;
-  if [ feature.get-values <target-os> ] = freertos
-  {
-    hello-template = "FreeRTOS Hello World" ;
-  }
 
   lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
 
