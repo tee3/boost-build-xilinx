@@ -16,7 +16,7 @@ pipeline {
     }
 
     environment {
-        boost_version = '1.70.0'
+        boost_version = '1.71.0'
         XILINXD_LICENSE_FILE = '2100@license-server-0.eastus.inradar.net'
     }
 
@@ -50,7 +50,7 @@ pipeline {
                 // boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
                 //
                 // export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
-                // $(pwd)/lib/boost_${boost_version_name}/bjam --user-config=tmp-user-config.jam -j 8 -a
+                // $(pwd)/lib/boost_${boost_version_name}/b2 --user-config=tmp-user-config.jam -j 8 -a
                 // '''
                 //
                 // publishHTML([allowMissing: false,
@@ -69,7 +69,7 @@ pipeline {
                 boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
 
                 export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
-                $(pwd)/lib/boost_${boost_version_name}/bjam --user-config=tmp-user-config.jam --help xsdk
+                $(pwd)/lib/boost_${boost_version_name}/b2 --user-config=tmp-user-config.jam --help xsdk
                 '''
             }
         }
@@ -80,7 +80,7 @@ pipeline {
 
                 source /opt/Xilinx/SDK/2018.3/settings64.sh
                 export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
-                cd test && $(pwd)/../lib/boost_${boost_version_name}/bjam --verbose-test -j 8 -a
+                cd test && $(pwd)/../lib/boost_${boost_version_name}/b2 --verbose-test -j 8 -a
                 '''
             }
         }
