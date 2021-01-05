@@ -1162,6 +1162,11 @@ rule generate-print ( targets + : sources + : properties * )
   print.text "" ;
 }
 
+actions generate-print
+{
+  echo chmod a+x $(<)
+}
+
 # Generate an XSCT script to run a program built with the XSDK
 # Workspace.
 #
@@ -1281,6 +1286,11 @@ rule generate-run ( targets + : sources + : properties * )
   print.text "#!/usr/bin/env xsct" : true ;
   print.lines $(lines) ;
   print.text "" ;
+}
+
+actions generate-run
+{
+  echo chmod a+x $(<)
 }
 
 TOUCH = [ common.file-touch-command ] ;
