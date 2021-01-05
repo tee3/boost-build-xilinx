@@ -126,7 +126,7 @@ something like the following.
 
 [source, tcl]
 ----
-createapp -name app       -app {$(xsdk-template)}  -lang $(xsdk-language) -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
+createapp -name app       -app {$(xsdk-template)}  -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
 projects -build -type app -name app
 
 createapp -name empty_c   -app {Empty Application} -lang c                -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
@@ -246,14 +246,6 @@ XSDK Workspace.
 
 This defaults to an empty application.
 
-== `xsdk-language`
-
-This feature indicates the language used for the application and is
-only required if the application template requires it.
-
-* `c` (default)
-* `c++`
-
 == `xsdk-configuration`
 
 This feature provides information for configuring a board-support
@@ -305,8 +297,6 @@ if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 }
 
 feature.feature xsdk-template : : free ;
-feature.feature xsdk-language : c c++ ;
-feature.set-default xsdk-language : c ;
 feature.feature xsdk-configuration : : free link-incompatible ;
 feature.feature xsdk-library : : free link-incompatible ;
 feature.feature xsdk-processor-prefix : : free ;
@@ -476,7 +466,6 @@ class ws-generator : generator
     assert.equal [ sequence.length $(sources) ] : 1 ;
 
     property-set = [ $(property-set).add-raw <relevant>toolset ] ;
-    property-set = [ $(property-set).add-raw <relevant>xsdk-language ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-processor-prefix ] ;
     property-set = [ $(property-set).add-raw <relevant>xsdk-processor-id ] ;
     property-set = [ $(property-set).add-raw <relevant>target-os ] ;
@@ -641,10 +630,6 @@ class ws-generator : generator
           extra-libs += metal ;
         }
         local library-group = $(extra-libs) $(l) gcc c ;
-        if [ $(property-set).get <xsdk-language> ] = c++
-        {
-          library-group += stdc++ ;
-        }
         local linkflags = [ string.join -Wl --start-group -l$(library-group) --end-group : "," ] ;
 
         ps = [ $(ps).add-raw <linkflags>$(linkflags) ] ;
@@ -933,7 +918,6 @@ rule generate-build ( targets + : sources + : properties * )
   local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
   xsdk-template ?= "Empty Application" ;
-  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
   assert.variable-not-empty xsdk-os ;
   assert.variable-not-empty xsdk-instruction-set ;
@@ -991,7 +975,7 @@ rule generate-build ( targets + : sources + : properties * )
     hello-template = "FreeRTOS Hello World" ;
   }
 
-  lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang $(xsdk-language) -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+  lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
   lines += "run-checked projects -build -type app -name app" ;
 
   lines += "run-checked createapp -name empty_c -app {$(empty-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
@@ -1207,7 +1191,6 @@ rule generate-run ( targets + : sources + : properties * )
   local xsdk-processor-id = [ feature.get-values <xsdk-processor-id> : $(properties) ] ;
   local xsdk-template = [ feature.get-values <xsdk-template> : $(properties) ] ;
   xsdk-template ?= "Empty Application" ;
-  local xsdk-language = [ feature.get-values <xsdk-language> : $(properties) ] ;
 
   assert.variable-not-empty xsdk-os ;
   assert.variable-not-empty xsdk-instruction-set ;

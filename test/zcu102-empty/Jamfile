@@ -16,28 +16,12 @@ project
   ;
 
 # @todo for now this must be explicit
-explicit ws_c ;
-xsdkws ws_c
+explicit ws ;
+xsdkws ws
   : # sources
     $(zcu102-hdf)
   : # requirements
     <link>static
-
-    <xsdk-language>c
-  : # default-build
-  : # usage-requirements
-    <linkflags>"-Wl,-T -Wl,lscript.ld"
-  ;
-
-# @todo for now this must be explicit
-explicit ws_cpp ;
-xsdkws ws_cpp
-  : # sources
-    $(zcu102-hdf)
-  : # requirements
-    <link>static
-
-    <xsdk-language>c++
   : # default-build
   : # usage-requirements
     <linkflags>"-Wl,-T -Wl,lscript.ld"
@@ -49,9 +33,7 @@ exe empty_c
   : # requirements
     <link>static
 
-    <xsdk-language>c
-
-    <dependency>ws_c
+    <dependency>ws
   ;
 
 exe empty_cpp
@@ -60,7 +42,7 @@ exe empty_cpp
   : # requirements
     <link>static
 
-    <xsdk-language>c++
+    <dependency>ws
 
-    <dependency>ws_cpp
+    <linkflags>"-Wl,--start-group -Wl,-lstdc++ -Wl,--end-group"
   ;
