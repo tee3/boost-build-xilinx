@@ -9,3 +9,7 @@ RUN apt-get -y update && apt-get -y install \
     libidn11 \
     xvfb \
     libncurses5
+
+# Set up build user with a real user, so we can run xilinx tools
+ARG UID
+RUN useradd --home-dir /home/jenkins --create-home --shell /bin/bash --uid ${UID} --user-group jenkins
