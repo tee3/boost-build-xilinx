@@ -654,9 +654,12 @@ class ws-generator : generator
 
     local virtual-targets ;
 
+    local hdf-path = [ $(sources[1]).name ] ;
+    local hdf-name = $(hdf-path:B) ;
+
     if ! $(name)
     {
-      name = [ generator.determine-output-name $(sources[1]) ] ;
+      name = $(hdf-name) ;
     }
 
     local shared ;
