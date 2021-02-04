@@ -727,8 +727,9 @@ class ws-generator : generator
     #t = [ class.new file-target $(ws)/hw/system : HDF : $(project) : $(a) ] ;
     #virtual-targets += [ virtual-target.register $(t) ] ;
 
-    t = [ class.new file-target $(ws)/hw/system : BIT : $(project) : $(a) ] ;
-    virtual-targets += [ virtual-target.register $(t) ] ;
+    # @todo do not generate the HDF target since name is hard to predit
+    #t = [ class.new file-target $(ws)/hw/system : BIT : $(project) : $(a) ] ;
+    #virtual-targets += [ virtual-target.register $(t) ] ;
 
     t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init : TCL : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
