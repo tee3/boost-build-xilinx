@@ -274,6 +274,15 @@ This should be auto-detected by the system.
 This feature assigns the application to run on a particular processor
 on the SoC, defaulting to 0.
 
+== `xsdk-fpga`
+
+This feature indicates the Xilinx FPGA.
+
+* xczu6eg
+* xczu7eg
+
+This defaults to an xczu7eg.
+
 |# # end::doc[]
 
 import os ;
@@ -302,6 +311,16 @@ feature.feature xsdk-library : : free link-incompatible ;
 feature.feature xsdk-processor-prefix : : free ;
 feature.feature xsdk-processor-id : 0 1 2 3 : link-incompatible ;
 feature.set-default xsdk-processor-id : 0 ;
+
+feature.feature xsdk-fpga
+  :
+    xczu6eg
+    xczu7eg
+  :
+    propagated link-incompatible symmetric
+  ;
+feature.set-default xsdk-fpga : xczu7eg ;
+
 
 feature.feature xsdk-os
   : # values
