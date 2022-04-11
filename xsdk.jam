@@ -1003,15 +1003,14 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked projects -build -type app -name app" ;
-
   lines += "run-checked createapp -name empty_c -app {$(empty-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked projects -build -type app -name empty_c" ;
   lines += "run-checked createapp -name empty_cpp -app {$(empty-template)} -lang c++ -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked projects -build -type app -name empty_cpp" ;
   lines += "run-checked createapp -name hello -app {$(hello-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked projects -build -type app -name hello" ;
 
+  for app in app empty_c empty_cpp hello
+  {
+    lines += "run-checked projects -build -type app -name $(app)" ;
+  }
 
   print.output $(target) ;
   print.text "#!/usr/bin/env xsct" : true ;
