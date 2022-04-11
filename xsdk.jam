@@ -604,10 +604,6 @@ class ws-generator : generator
 
     local instruction-set = [ $(property-set).get <instruction-set> ] ;
 
-    # @todo this cannot work due to toolset and usage-requirement
-    # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
-    # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
-
     # @todo these should really be done in each toolset (e.g. gcc.jam)
     # @todo figure out the tool chooses this or use the app and ask after it's built
     switch $(instruction-set)
@@ -632,8 +628,6 @@ class ws-generator : generator
             ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           }
     }
-
-    # add properties from createbsp
 
 ### @todo workaround for linking issues
 ###    for local vt in $(vts)
@@ -1018,6 +1012,7 @@ rule generate-build ( targets + : sources + : properties * )
     # @todo print out all available options nicely
     lines += "configbsp -bsp bsp $(c)" ;
   }
+  # @todo add properties from createbsp
 
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
