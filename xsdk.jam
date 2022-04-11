@@ -505,11 +505,10 @@ class ws-generator : generator
     property-set = [ $(property-set).add-raw <relevant>cflags ] ;
     property-set = [ $(property-set).add-raw <relevant>linkflags ] ;
 
-    # @todo is dynamic linking possible?
-####    if [ $(property-set).get <link> ] != static
-####    {
-####      errors.error "<link> must be static" ;
-####    }
+    if [ $(property-set).get <link> ] != static
+    {
+      errors.error "<link> must be static" ;
+    }
 
     if ! [ $(property-set).get <instruction-set> ]
     {
