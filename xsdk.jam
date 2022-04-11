@@ -216,6 +216,15 @@ If Boost.Build does not support a required value for a feature, the
 * `freertos` - The FreeRTOS operating system for Zynq systems.
 * `xilkernel` - The Xilinx kernel for Microblaze.
 
+== `<architecture>` - the architecture
+
+The architecture definition file defines which architectures are
+available in a particular design.  The architectures supported by the
+XSDK are shown below.
+
+* `arm` - ARM
+* `microblaze` - Microblaze
+
 == `<instruction-set>` - the instruction set or processor
 
 The hardware definition file defines which processors are available in
@@ -360,6 +369,20 @@ feature.feature xsdk-instruction-set
   : # attributes
     propagated optional
   ;
+
+# @todo until all architecture supported in Boost.Build
+local architecture-supported =
+  arm
+  microblaze
+  ;
+for local t in $(architecture-supported)
+{
+  local architecture-values = [ feature.values <architecture> ] ;
+  if ! $(t) in $(architecture-values)
+  {
+    feature.extend architecture : $(t) ;
+  }
+}
 
 # @todo until all instruction-set supported in Boost.Build
 local instruction-set-supported =
@@ -508,6 +531,11 @@ class ws-generator : generator
     if [ $(property-set).get <link> ] != static
     {
       errors.error "<link> must be static" ;
+    }
+
+    if ! [ $(property-set).get <architecture> ]
+    {
+      errors.error "<architecture> must be set" ;
     }
 
     if ! [ $(property-set).get <instruction-set> ]
