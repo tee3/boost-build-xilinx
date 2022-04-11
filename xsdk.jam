@@ -321,7 +321,6 @@ feature.feature xsdk-fpga
   ;
 feature.set-default xsdk-fpga : xczu7eg ;
 
-
 feature.feature xsdk-os
   : # values
     standalone
