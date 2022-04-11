@@ -169,10 +169,10 @@ project project-config
     # @todo workaround for features unknown to Boost.Build
     <instruction-set>cortex-a9:<cflags>-mcpu=cortex-a9
     <instruction-set>cortex-a9:<linkflags>-mcpu=cortex-a9
-    <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
-    <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
     <instruction-set>cortex-a9:<cflags>-mfpu=vfpv3
     <instruction-set>cortex-a9:<linkflags>-mfpu=vfpv3
+    <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
+    <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
 
     <instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5:<linkflags>-mcpu=cortex-r5
@@ -584,10 +584,10 @@ class ws-generator : generator
       case cortex-a9 :
           ps = [ $(ps).add-raw <cflags>-mcpu=$(instruction-set) ] ;
           ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
-          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
           ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
+          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
       case cortex-r5 :
@@ -595,10 +595,10 @@ class ws-generator : generator
           ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
           if [ $(property-set).get <target-os> ] != freertos
           {
-            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
             ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
             ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3-d16 ] ;
+            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           }
     }
 
