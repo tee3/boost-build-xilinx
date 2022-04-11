@@ -629,8 +629,6 @@ class ws-generator : generator
           }
     }
 
-    # add properties from createbsp
-
 ### @todo workaround for linking issues
 ###    for local vt in $(vts)
 ###    {
@@ -1014,6 +1012,7 @@ rule generate-build ( targets + : sources + : properties * )
     # @todo print out all available options nicely
     lines += "configbsp -bsp bsp $(c)" ;
   }
+  # @todo add properties from createbsp
 
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
