@@ -342,6 +342,8 @@ for local t in $(target-os-supported)
   local target-os-values = [ feature.values <target-os> ] ;
   if ! $(t) in $(target-os-values)
   {
+    ECHO "xsdk:warning: <target-os>$(t) is not supported in Boost.Build." ;
+
     feature.extend target-os : $(t) ;
   }
 }
@@ -372,6 +374,8 @@ for local t in $(instruction-set-supported)
   local instruction-set-values = [ feature.values <instruction-set> ] ;
   if ! $(t) in $(instruction-set-values)
   {
+    ECHO "xsdk:warning: <instruction-set>$(t) is not supported in Boost.Build." ;
+
     feature.extend instruction-set : $(t) ;
   }
 }
