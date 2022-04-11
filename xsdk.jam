@@ -604,10 +604,6 @@ class ws-generator : generator
 
     local instruction-set = [ $(property-set).get <instruction-set> ] ;
 
-    # @todo this cannot work due to toolset and usage-requirement
-    # toolset = [ instruction-set-to-toolset $(instruction-set) ] ;
-    # ps = [ $(ps).add-raw <toolset>$(toolset) ] ;
-
     # @todo these should really be done in each toolset (e.g. gcc.jam)
     # @todo figure out the tool chooses this or use the app and ask after it's built
     switch $(instruction-set)
