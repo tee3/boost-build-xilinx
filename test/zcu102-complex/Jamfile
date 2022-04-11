@@ -8,6 +8,8 @@ project
     <target-os>elf
     <target-os>freertos
 
+    <architecture>arm
+
     <instruction-set>cortex-r5
     <instruction-set>cortex-a53
 

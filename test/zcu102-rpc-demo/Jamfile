@@ -15,6 +15,8 @@ xsdkws ws
 
     <link>static
 
+    <architecture>arm
+
     <instruction-set>cortex-r5
 
     <xsdk-template>"OpenAMP RPC Demo"

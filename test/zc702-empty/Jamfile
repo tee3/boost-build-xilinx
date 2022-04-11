@@ -8,6 +8,8 @@ project
     <target-os>elf
     <target-os>freertos
 
+    <architecture>arm
+
     <instruction-set>cortex-a9
 
     <xsdk-processor-id>0
