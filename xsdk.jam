@@ -582,8 +582,8 @@ class ws-generator : generator
     switch $(instruction-set)
     {
       case cortex-a9 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=$(instruction-set) ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
+          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a9 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a9 ] ;
           ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
           ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
           ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
@@ -591,8 +591,8 @@ class ws-generator : generator
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
       case cortex-r5 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=$(instruction-set) ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=$(instruction-set) ] ;
+          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-r5 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-r5 ] ;
           if [ $(property-set).get <target-os> ] != freertos
           {
             ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
