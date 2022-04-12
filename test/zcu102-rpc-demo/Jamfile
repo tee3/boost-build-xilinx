@@ -45,6 +45,8 @@ exe rpc-demo
 
     <link>static
 
+    <architecture>arm
+
     <instruction-set>cortex-r5+vfpv3-d16
 
     <dependency>ws
