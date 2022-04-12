@@ -898,28 +898,6 @@ class ws-generator : generator
     return $(tmp) ;
   }
 
-  # Return the XSDK <toolset> as required by the <instruction-set>
-  # represented by value.
-  #
-  # @todo this should take into account the XSDK version.
-  rule instruction-set-to-toolset ( value )
-  {
-    assert.in $(value) : [ feature.values <instruction-set> ] ;
-
-    local tmp ;
-    switch $(value)
-    {
-      case cortex-r5 : tmp = gcc-xsdkarmr5 ;
-      case cortex-a9 : tmp = gcc-xsdkaarch32 ;
-      case cortex-a53 : tmp = gcc-xsdkaarch64 ;
-      case microblaze : tmp = gcc-xsdkmicroblaze ;
-    }
-
-    assert.variable-not-empty tmp ;
-
-    return $(tmp) ;
-  }
-
   # Return the <library> as required by the <xsdk-library> represented
   # by value.
   #
