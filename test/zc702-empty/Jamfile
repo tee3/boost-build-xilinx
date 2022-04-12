@@ -10,7 +10,8 @@ project
 
     <architecture>arm
 
-    <instruction-set>cortex-a9
+    # @todo Xilinx cortex-a9 boot.S requires vfpv3
+    # <instruction-set>cortex-a9
     <instruction-set>cortex-a9+vfpv3
 
     <xsdk-processor-id>0
