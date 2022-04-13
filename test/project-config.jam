@@ -17,10 +17,6 @@ project
     # @todo workaround for features unknown to Boost.Build
     <instruction-set>cortex-a9:<cflags>-mcpu=cortex-a9
     <instruction-set>cortex-a9:<linkflags>-mcpu=cortex-a9
-    <instruction-set>cortex-a9:<cflags>-mfpu=vfpv3
-    <instruction-set>cortex-a9:<linkflags>-mfpu=vfpv3
-    <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
-    <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
 
     <instruction-set>cortex-a9+vfpv3:<cflags>-mcpu=cortex-a9
     <instruction-set>cortex-a9+vfpv3:<linkflags>-mcpu=cortex-a9
@@ -34,17 +30,15 @@ project
 
     <instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5:<linkflags>-mcpu=cortex-r5
-    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfloat-abi=hard
-    <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfloat-abi=hard
 
     <instruction-set>cortex-r5+vfpv3-d16:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mcpu=cortex-r5
-    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16
+    <instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16
+    <instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16
     <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=hard
     <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=hard
+    <target-os>freertos,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=softfp
+    <target-os>freertos,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=softfp
   ;
 
 using xsdk ;

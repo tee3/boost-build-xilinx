@@ -171,10 +171,6 @@ project project-config
     # @todo workaround for features unknown to Boost.Build
     <instruction-set>cortex-a9:<cflags>-mcpu=cortex-a9
     <instruction-set>cortex-a9:<linkflags>-mcpu=cortex-a9
-    <instruction-set>cortex-a9:<cflags>-mfpu=vfpv3
-    <instruction-set>cortex-a9:<linkflags>-mfpu=vfpv3
-    <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
-    <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
 
     <instruction-set>cortex-a9+vfpv3:<cflags>-mcpu=cortex-a9
     <instruction-set>cortex-a9+vfpv3:<linkflags>-mcpu=cortex-a9
@@ -188,17 +184,15 @@ project project-config
 
     <instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5:<linkflags>-mcpu=cortex-r5
-    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfloat-abi=hard
-    <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfloat-abi=hard
 
     <instruction-set>cortex-r5+vfpv3-d16:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mcpu=cortex-r5
-    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16
-    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16
+    <instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16
+    <instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16
     <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=hard
     <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=hard
+    <target-os>freertos,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=softfp
+    <target-os>freertos,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=softfp
   ;
 
 using xsdk ;
@@ -629,51 +623,14 @@ class ws-generator : generator
 
     local instruction-set = [ $(property-set).get <instruction-set> ] ;
 
-    # @todo these should really be done in each toolset (e.g. gcc.jam)
-    # @todo figure out the tool chooses this or use the app and ask after it's built
     switch $(instruction-set)
     {
       case cortex-a9 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a9 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a9 ] ;
-          ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
-          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
       case cortex-a9+vfpv3 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a9 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a9 ] ;
-          ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
-          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
-      case cortex-a53 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a53 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a53 ] ;
-      case cortex-r5 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-r5 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-r5 ] ;
-          if [ $(property-set).get <target-os> ] != freertos
-          {
-            ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
-            ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3-d16 ] ;
-            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
-          }
-      case cortex-r5+vfpv3-d16 :
-          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-r5 ] ;
-          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-r5 ] ;
-          if [ $(property-set).get <target-os> ] != freertos
-          {
-            ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
-            ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3-d16 ] ;
-            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
-            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
-          }
     }
 
 ### @todo workaround for linking issues
@@ -1042,7 +999,79 @@ rule generate-build ( targets + : sources + : properties * )
     # @todo print out all available options nicely
     lines += "configbsp -bsp bsp $(c)" ;
   }
-  # @todo add properties from createbsp
+  # flags to track between desired build and BSP
+  local interesting-compiler-flags =
+    -mcpu=cortex-a9
+    -mcpu=cortex-a53
+    -mcpu=cortex-r5
+    -mfpu=vfpv3
+    -mfpu=vfpv3-d16
+    -mfloat-abi=hard
+    -mfloat-abi=soft
+    -mfloat-abi=softfp
+    ;
+
+  # remove all interesting compiler flags from BSP
+  lines +=
+    "set interesting_compiler_flags [list]"
+    "lappend interesting_compiler_flags \"$(interesting-compiler-flags)\""
+    "set compiler_flags [list]"
+    "foreach word [split [configbsp -bsp bsp compiler_flags] \" \"] {"
+    "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    "        continue"
+    "    }"
+    "    lappend compiler_flags $word"
+    "}"
+    "configbsp -bsp bsp compiler_flags [join $compiler_flags \" \"]"
+    "set extra_compiler_flags [list]"
+    "foreach word [split [configbsp -bsp bsp extra_compiler_flags] \" \"] {"
+    "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    "        continue"
+    "    }"
+    "    lappend extra_compiler_flags $word"
+    "}"
+    "configbsp -bsp bsp extra_compiler_flags [join $extra_compiler_flags \" \"]"
+    ;
+  # check against standard features
+  local instruction-set = [ feature.get-values <instruction-set> : $(properties) ] ;
+  local bsp-fields = compiler_flags extra_compiler_flags ;
+  switch $(instruction-set)
+  {
+    case cortex-a9 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-a9\"" ;
+    case cortex-a9+vfpv3 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-a9\"" ;
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mfpu=vfpv3\"" ;
+    case cortex-a53 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-a53\"" ;
+    case cortex-a53+vfpv3 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-a53\"" ;
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mfpu=vfpv3\"" ;
+    case cortex-r5 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-r5\"" ;
+    case cortex-r5+vfpv3-d16 :
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mcpu=cortex-r5\"" ;
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"-mfpu=vfpv3-d16\"" ;
+  }
+  # check also within <cflags> and <linkflags> for unsupported <instruction-set>
+  for local t in [ feature.get-values <cflags> : $(properties) ]
+  {
+    if $(t) in $(interesting-compiler-flags)
+    {
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"$(t)\"" ;
+    }
+  }
+  for local t in [ feature.get-values <linkflags> : $(properties) ]
+  {
+    if $(t) in $(interesting-compilerflags)
+    {
+      lines += "configbsp -bsp bsp -append $(bsp-fields) \"$(t)\"" ;
+    }
+  }
+
+  # print the actual BSP configuration
+  lines += "puts \"bsp_final_compiler_flags: [configbsp -bsp bsp compiler_flags]\"" ;
+  lines += "puts \"bsp_final_extra_compiler_flags: [configbsp -bsp bsp extra_compiler_flags]\"" ;
 
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
@@ -1065,6 +1094,65 @@ rule generate-build ( targets + : sources + : properties * )
 
   for app in app empty_c empty_cpp hello
   {
+    # @todo compiler flags cannot be removed from application configration
+    # # remove all interesting compiler flags from application
+    # lines +=
+    #   "set compiler_misc [list]"
+    #   "foreach word [split [configapp -app $(app) compiler-misc] \" \"] {"
+    #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    #   "        continue"
+    #   "    }"
+    #   "    lappend compiler_misc $word"
+    #   "}"
+    #   "configapp -app $(app) -set compiler-misc [join $compiler_misc \" \"]"
+    #   "set linker_misc [list]"
+    #   "foreach word [split [configapp -app $(app) linker-misc] \" \"] {"
+    #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    #   "        continue"
+    #   "    }"
+    #   "    lappend linker_misc $word"
+    #   "}"
+    #   "configapp -app $(app) -set linker-misc [join $linker_misc \" \"]"
+    #   ;
+    local instruction-set = [ feature.get-values <instruction-set> : $(properties) ] ;
+    local app-fields = compiler-misc linker-misc ;
+    switch $(instruction-set)
+    {
+      case cortex-a9 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a9\"" ;
+      case cortex-a9+vfpv3 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a9\"" ;
+        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3\"" ;
+      case cortex-a53 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a53\"" ;
+      case cortex-a53+vfpv3 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a53\"" ;
+        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3\"" ;
+      case cortex-r5 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-r5\"" ;
+      case cortex-r5+vfpv3-d16 :
+        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-r5\"" ;
+        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3-d16\"" ;
+    }
+    for local t in [ feature.get-values <cflags> : $(properties) ]
+    {
+      if $(t) in $(interesting-compiler-flags)
+      {
+        lines += "configapp -app $(app) -add $(app-fields) \"$(t)\"" ;
+      }
+    }
+    for local t in [ feature.get-values <linkflags> : $(properties) ]
+    {
+      if $(t) in $(interesting-compilerflags)
+      {
+        lines += "configapp -app $(app) -add $(app-fields) \"$(t)\"" ;
+      }
+    }
+
+    # print the actual application configuration
+    lines += "puts \"$(app)_final_compiler_misc: [configapp -app $(app) compiler-misc]\"" ;
+    lines += "puts \"$(app)_final_linker_misc: [configapp -app $(app) linker-misc]\"" ;
+
     lines += "run-checked projects -build -type app -name $(app)" ;
   }
 
