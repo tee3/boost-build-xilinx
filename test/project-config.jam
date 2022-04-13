@@ -3,9 +3,6 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-import toolset ;
-import feature ;
-
 import xsdk ;
 
 project
@@ -35,54 +32,4 @@ else
   using gcc : xsdkaarch64 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
   using gcc : xsdkarmr5 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
   # using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
-}
-
-# @todo until all instruction-set supported in Boost.Build
-local instruction-set-supported =
-  cortex-a9
-  cortex-a9+vfpv3
-  cortex-a53
-  cortex-r5
-  cortex-r5+vfpv3-d16
-
-  microblaze
-  ;
-for local t in $(instruction-set-supported)
-{
-  local instruction-set-values = [ feature.values <instruction-set> ] ;
-  if ! $(t) in $(instruction-set-values)
-  {
-    ECHO "xsdk:warning: <instruction-set>$(t) is not supported in Boost.Build." ;
-
-    feature.extend instruction-set : $(t) ;
-
-    switch $(t)
-    {
-      case cortex-a9 :
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9:<cflags>-mcpu=cortex-a9 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9:<linkflags>-mcpu=cortex-a9 ;
-      case cortex-a9+vfpv3 :
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<cflags>-mcpu=cortex-a9 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<linkflags>-mcpu=cortex-a9 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<cflags>-mfpu=vfpv3 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<linkflags>-mfpu=vfpv3 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<cflags>-mfloat-abi=hard ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a9+vfpv3:<linkflags>-mfloat-abi=hard ;
-      case cortex-a53 :
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a53:<cflags>-mcpu=cortex-a53 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-a53:<linkflags>-mcpu=cortex-a53 ;
-      case cortex-r5 :
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5:<linkflags>-mcpu=cortex-r5 ;
-      case cortex-r5+vfpv3-d16 :
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mcpu=cortex-r5 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mcpu=cortex-r5 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16 ;
-	toolset.add-requirements <toolset>gcc,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16 ;
-	toolset.add-requirements <toolset>gcc,<target-os>elf,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=hard ;
-	toolset.add-requirements <toolset>gcc,<target-os>elf,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=hard ;
-	toolset.add-requirements <toolset>gcc,<target-os>freertos,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=softfp ;
-	toolset.add-requirements <toolset>gcc,<target-os>freertos,<architecture>arm,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=softfp ;
-    }
-  }
 }
