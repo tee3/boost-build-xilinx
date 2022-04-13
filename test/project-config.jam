@@ -20,6 +20,9 @@ project
     <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
     <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
 
+    <instruction-set>cortex-a53:<cflags>-mcpu=cortex-a53
+    <instruction-set>cortex-a53:<linkflags>-mcpu=cortex-a53
+
     <instruction-set>cortex-r5:<cflags>-mcpu=cortex-r5
     <instruction-set>cortex-r5:<linkflags>-mcpu=cortex-r5
     <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfpu=vfpv3-d16

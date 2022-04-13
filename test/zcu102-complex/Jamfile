@@ -10,8 +10,8 @@ project
 
     <architecture>arm
 
-    <instruction-set>cortex-r5
     <instruction-set>cortex-a53
+    <instruction-set>cortex-r5
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1
