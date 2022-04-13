@@ -401,6 +401,8 @@ for local t in $(architecture-supported)
   local architecture-values = [ feature.values <architecture> ] ;
   if ! $(t) in $(architecture-values)
   {
+    ECHO "xsdk:warning: <architecture>$(t) is not supported in Boost.Build." ;
+
     feature.extend architecture : $(t) ;
   }
 }
