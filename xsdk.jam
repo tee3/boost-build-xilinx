@@ -162,8 +162,10 @@ import xsdk ;
 project project-config
   : requirements
     <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a9+vfpv3:<toolset>gcc-xsdkaarch32
     <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
     <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
+    <instruction-set>cortex-r5+vfpv3-d16:<toolset>gcc-xsdkarmr5
     <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
 
     # @todo workaround for features unknown to Boost.Build
@@ -174,6 +176,13 @@ project project-config
     <instruction-set>cortex-a9:<cflags>-mfloat-abi=hard
     <instruction-set>cortex-a9:<linkflags>-mfloat-abi=hard
 
+    <instruction-set>cortex-a9+vfpv3:<cflags>-mcpu=cortex-a9
+    <instruction-set>cortex-a9+vfpv3:<linkflags>-mcpu=cortex-a9
+    <instruction-set>cortex-a9+vfpv3:<cflags>-mfpu=vfpv3
+    <instruction-set>cortex-a9+vfpv3:<linkflags>-mfpu=vfpv3
+    <instruction-set>cortex-a9+vfpv3:<cflags>-mfloat-abi=hard
+    <instruction-set>cortex-a9+vfpv3:<linkflags>-mfloat-abi=hard
+
     <instruction-set>cortex-a53:<cflags>-mcpu=cortex-a53
     <instruction-set>cortex-a53:<linkflags>-mcpu=cortex-a53
 
@@ -183,6 +192,13 @@ project project-config
     <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfpu=vfpv3-d16
     <target-os>elf,<instruction-set>cortex-r5:<cflags>-mfloat-abi=hard
     <target-os>elf,<instruction-set>cortex-r5:<linkflags>-mfloat-abi=hard
+
+    <instruction-set>cortex-r5+vfpv3-d16:<cflags>-mcpu=cortex-r5
+    <instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mcpu=cortex-r5
+    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfpu=vfpv3-d16
+    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfpu=vfpv3-d16
+    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<cflags>-mfloat-abi=hard
+    <target-os>elf,<instruction-set>cortex-r5+vfpv3-d16:<linkflags>-mfloat-abi=hard
   ;
 
 using xsdk ;
@@ -235,8 +251,10 @@ a particular design.  The processors supported by the XSDK are shown
 below.
 
 * `cortex-a9` - Cortex-A9
+* `cortex-a9+vfpv3` - Cortex-A9 (vfpv3 FPU)
 * `cortex-a53` - Cortex-A53
 * `cortex-r5` - Cortex-R5
+* `cortex-r5+vfpv3-d16` - Cortex-R5 (vfpv3-d16 FPU)
 * `microblaze` - Microblaze
 
 = XSDK-related Features
@@ -390,8 +408,10 @@ for local t in $(architecture-supported)
 # @todo until all instruction-set supported in Boost.Build
 local instruction-set-supported =
   cortex-a9
+  cortex-a9+vfpv3
   cortex-a53
   cortex-r5
+  cortex-r5+vfpv3-d16
 
   microblaze
   ;
@@ -620,10 +640,29 @@ class ws-generator : generator
           ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
+      case cortex-a9+vfpv3 :
+          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a9 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a9 ] ;
+          ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3 ] ;
+          ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+          ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
+          ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
+          ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
       case cortex-a53 :
           ps = [ $(ps).add-raw <cflags>-mcpu=cortex-a53 ] ;
           ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-a53 ] ;
       case cortex-r5 :
+          ps = [ $(ps).add-raw <cflags>-mcpu=cortex-r5 ] ;
+          ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-r5 ] ;
+          if [ $(property-set).get <target-os> ] != freertos
+          {
+            ps = [ $(ps).add-raw <cflags>-mfpu=vfpv3-d16 ] ;
+            ps = [ $(ps).add-raw <linkflags>-mfpu=vfpv3-d16 ] ;
+            ps = [ $(ps).add-raw <cflags>-mfloat-abi=hard ] ;
+            ps = [ $(ps).add-raw <linkflags>-mfloat-abi=hard ] ;
+          }
+      case cortex-r5+vfpv3-d16 :
           ps = [ $(ps).add-raw <cflags>-mcpu=cortex-r5 ] ;
           ps = [ $(ps).add-raw <linkflags>-mcpu=cortex-r5 ] ;
           if [ $(property-set).get <target-os> ] != freertos
@@ -859,8 +898,10 @@ class ws-generator : generator
     switch $(value)
     {
       case cortex-a9 : tmp = cortexa9 ;
+      case cortex-a9+vfpv3 : tmp = cortexa9 ;
       case cortex-a53 : tmp = cortexa53 ;
       case cortex-r5 : tmp = cortexr5 ;
+      case cortex-r5+vfpv3-d16 : tmp = cortexr5 ;
       case microblaze : tmp = microblaze ;
     }
 
@@ -879,8 +920,10 @@ class ws-generator : generator
     switch $(value)
     {
       case cortex-a9 : tmp = ps7 ;
+      case cortex-a9+vfpv3 : tmp = ps7 ;
       case cortex-a53 : tmp = psu ;
       case cortex-r5 : tmp = psu ;
+      case cortex-r5+vfpv3-d16 : tmp = psu ;
       case microblaze : tmp = psu ;
     }
 
@@ -899,6 +942,7 @@ class ws-generator : generator
     switch $(value)
     {
       case cortex-r5 : tmp += ARMR5 ;
+      case cortex-r5+vfpv3-d16 : tmp += ARMR5 ;
     }
 
     return $(tmp) ;
