@@ -1189,8 +1189,6 @@ rule generate-build ( targets + : sources + : properties * )
       "    puts $actual_configuration \"app $(app) $option: [configapp -app $(app) $option]\""
       "}"
       ;
-
-    lines += "run-checked projects -build -type app -name $(app)" ;
   }
 
   lines += "close $possible_configuration" ;
