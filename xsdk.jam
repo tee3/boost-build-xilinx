@@ -494,7 +494,7 @@ rule init ( version ? : command * : options * )
   }
   else
   {
-    ECHO "xsdk: warning: unsupported operating system" os.name ;
+    ECHO "xsdk:warning: unsupported operating system" os.name ;
   }
 }
 
@@ -980,25 +980,38 @@ rule generate-build ( targets + : sources + : properties * )
   # set the workspace
   lines += "run-checked setws -switch $(ws)" ;
 
+  # channels to capture the configurations
+  lines += "set possible_configuration [open $(ws)/../possible_configuration.txt w]" ;
+  lines += "set original_configuration [open $(ws)/../original_configuration.txt w]" ;
+  lines += "set actual_configuration [open $(ws)/../actual_configuration.txt w]" ;
+
   # create the hardware
   lines += "run-checked createhw -name hw -hwspec $(hdf)" ;
 
   # create and configure the bsp
-  # @todo print out all available options nicely
   lines += "run-checked createbsp -name bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
+
+  lines += "puts $possible_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $possible_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $possible_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
-    # @todo print out all available options nicely
-    # @todo check for errors
     lines += "setlib -bsp bsp -lib $(l)" ;
   }
-  # @todo print out all available options nicely
   for local c in [ feature.get-values <xsdk-configuration> : $(properties) ]
   {
-    # @todo check for errors
-    # @todo print out all available options nicely
     lines += "configbsp -bsp bsp $(c)" ;
   }
+
+  lines += "puts $original_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $original_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $original_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+  for local l in [ feature.get-values <xsdk-library> : $(properties) ]
+  {
+    lines += "puts $original_configuration \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
+  }
+
   # flags to track between desired build and BSP
   local interesting-compiler-flags =
     -mcpu=cortex-a9
@@ -1070,8 +1083,13 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   # print the actual BSP configuration
-  lines += "puts \"bsp_final_compiler_flags: [configbsp -bsp bsp compiler_flags]\"" ;
-  lines += "puts \"bsp_final_extra_compiler_flags: [configbsp -bsp bsp extra_compiler_flags]\"" ;
+  lines += "puts $actual_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $actual_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $actual_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+  for local l in [ feature.get-values <xsdk-library> : $(properties) ]
+  {
+    lines += "puts $actual_configuration \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
+  }
 
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
@@ -1094,6 +1112,21 @@ rule generate-build ( targets + : sources + : properties * )
 
   for app in app empty_c empty_cpp hello
   {
+    lines +=
+      "foreach line [split [configapp] \"\n\"] {"
+      "    regexp { *([^ ]+) .+ *} $line ignored option"
+      "    puts $possible_configuration \"app $(app) $option:\n[configapp -app $(app) -info $option]\""
+      "}"
+      ;
+
+    # print the original application configuration
+    lines +=
+      "foreach line [split [configapp] \"\n\"] {"
+      "    regexp { *([^ ]+) .+ *} $line ignored option"
+      "    puts $original_configuration \"app $(app) $option: [configapp -app $(app) $option]\""
+      "}"
+      ;
+
     # @todo compiler flags cannot be removed from application configration
     # # remove all interesting compiler flags from application
     # lines +=
@@ -1150,11 +1183,19 @@ rule generate-build ( targets + : sources + : properties * )
     }
 
     # print the actual application configuration
-    lines += "puts \"$(app)_final_compiler_misc: [configapp -app $(app) compiler-misc]\"" ;
-    lines += "puts \"$(app)_final_linker_misc: [configapp -app $(app) linker-misc]\"" ;
+    lines +=
+      "foreach line [split [configapp] \"\n\"] {"
+      "    regexp { *([^ ]+) .+ *} $line ignored option"
+      "    puts $actual_configuration \"app $(app) $option: [configapp -app $(app) $option]\""
+      "}"
+      ;
 
     lines += "run-checked projects -build -type app -name $(app)" ;
   }
+
+  lines += "close $possible_configuration" ;
+  lines += "close $original_configuration" ;
+  lines += "close $actual_configuration" ;
 
   print.output $(target) ;
   print.text "#!/usr/bin/env xsct" : true ;
