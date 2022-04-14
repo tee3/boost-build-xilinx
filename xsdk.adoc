@@ -36,7 +36,7 @@ xsdkws ws
 
     <architecture>arm
 
-    <instruction-set>cortex-r5+vfpv3
+    <instruction-set>cortex-r5+vfpv3-d16
 
     <xsdk-configuration>"sleep_time psu_ttc_3"
   : # default-build
