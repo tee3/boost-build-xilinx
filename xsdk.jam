@@ -494,7 +494,7 @@ rule init ( version ? : command * : options * )
   }
   else
   {
-    ECHO "xsdk: warning: unsupported operating system" os.name ;
+    ECHO "xsdk:warning: unsupported operating system" os.name ;
   }
 }
 
