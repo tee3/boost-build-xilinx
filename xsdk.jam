@@ -51,8 +51,7 @@ This project will add one main target type named `xsdkws`.
 xsdkws ( name : sources + : requirements * : default-build * : usage-requirements * )
 ----
 
-This target will place an application named `app`, several example
-applications (`empty_c`, `empty_cpp`, and `hello`), a board-support
+This target will place an application named `app`, a board-support
 packaged named `bsp`, and a hardware definition named `hw` within a
 workspace named as defined in the rule, `$(name)`, and provide
 `usage-requirements` to users of the named target.
@@ -112,15 +111,6 @@ application template nor the application language is required, but can
 sometimes be useful to generate a program that can be used as the
 basis of your program.
 
-The build script will generate several additional applications for
-comparison.  Building these application is done as a reference to
-debug build issues with programs not built using the XSCT tool as well
-as a way to compare the resulting build options.
-
-* `empty_c` - based on the "Empty Application" template for the C language
-* `empty_cpp` - based on the "Empty Application" template for the C++ language
-* `hello` - based on the "Hello World" or "FreeRTOS Hello World" template for the C language
-
 For example, if `<target-os>` is `elf`, the script generated will be
 something like the following.
 
@@ -128,13 +118,6 @@ something like the following.
 ----
 createapp -name app       -app {$(xsdk-template)}  -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
 projects -build -type app -name app
-
-createapp -name empty_c   -app {Empty Application} -lang c                -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
-projects -build -type app -name empty_c
-createapp -name empty_cpp -app {Empty Application} -lang c++              -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
-projects -build -type app -name empty_cpp
-createapp -name hello     -app {Hello World}       -lang c                -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
-projects -build -type app -name hello
 
 ----
 
@@ -1106,90 +1089,84 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   lines += "run-checked createapp -name app -app {$(xsdk-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked createapp -name empty_c -app {$(empty-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked createapp -name empty_cpp -app {$(empty-template)} -lang c++ -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
-  lines += "run-checked createapp -name hello -app {$(hello-template)} -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
 
-  for app in app empty_c empty_cpp hello
+  lines +=
+    "foreach line [split [configapp] \"\n\"] {"
+    "    regexp { *([^ ]+) .+ *} $line ignored option"
+    "    puts $possible_configuration \"app app $option:\n[configapp -app app -info $option]\""
+    "}"
+    ;
+
+  # print the original application configuration
+  lines +=
+    "foreach line [split [configapp] \"\n\"] {"
+    "    regexp { *([^ ]+) .+ *} $line ignored option"
+    "    puts $original_configuration \"app app $option: [configapp -app app $option]\""
+    "}"
+    ;
+
+  # @todo compiler flags cannot be removed from application configration
+  # # remove all interesting compiler flags from application
+  # lines +=
+  #   "set compiler_misc [list]"
+  #   "foreach word [split [configapp -app app compiler-misc] \" \"] {"
+  #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+  #   "        continue"
+  #   "    }"
+  #   "    lappend compiler_misc $word"
+  #   "}"
+  #   "configapp -app app -set compiler-misc [join $compiler_misc \" \"]"
+  #   "set linker_misc [list]"
+  #   "foreach word [split [configapp -app app linker-misc] \" \"] {"
+  #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+  #   "        continue"
+  #   "    }"
+  #   "    lappend linker_misc $word"
+  #   "}"
+  #   "configapp -app app -set linker-misc [join $linker_misc \" \"]"
+  #   ;
+  local instruction-set = [ feature.get-values <instruction-set> : $(properties) ] ;
+  local app-fields = compiler-misc linker-misc ;
+  switch $(instruction-set)
   {
-    lines +=
-      "foreach line [split [configapp] \"\n\"] {"
-      "    regexp { *([^ ]+) .+ *} $line ignored option"
-      "    puts $possible_configuration \"app $(app) $option:\n[configapp -app $(app) -info $option]\""
-      "}"
-      ;
-
-    # print the original application configuration
-    lines +=
-      "foreach line [split [configapp] \"\n\"] {"
-      "    regexp { *([^ ]+) .+ *} $line ignored option"
-      "    puts $original_configuration \"app $(app) $option: [configapp -app $(app) $option]\""
-      "}"
-      ;
-
-    # @todo compiler flags cannot be removed from application configration
-    # # remove all interesting compiler flags from application
-    # lines +=
-    #   "set compiler_misc [list]"
-    #   "foreach word [split [configapp -app $(app) compiler-misc] \" \"] {"
-    #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
-    #   "        continue"
-    #   "    }"
-    #   "    lappend compiler_misc $word"
-    #   "}"
-    #   "configapp -app $(app) -set compiler-misc [join $compiler_misc \" \"]"
-    #   "set linker_misc [list]"
-    #   "foreach word [split [configapp -app $(app) linker-misc] \" \"] {"
-    #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
-    #   "        continue"
-    #   "    }"
-    #   "    lappend linker_misc $word"
-    #   "}"
-    #   "configapp -app $(app) -set linker-misc [join $linker_misc \" \"]"
-    #   ;
-    local instruction-set = [ feature.get-values <instruction-set> : $(properties) ] ;
-    local app-fields = compiler-misc linker-misc ;
-    switch $(instruction-set)
-    {
-      case cortex-a9 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a9\"" ;
-      case cortex-a9+vfpv3 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a9\"" ;
-        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3\"" ;
-      case cortex-a53 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a53\"" ;
-      case cortex-a53+vfpv3 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-a53\"" ;
-        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3\"" ;
-      case cortex-r5 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-r5\"" ;
-      case cortex-r5+vfpv3-d16 :
-        lines += "configapp -app $(app) -add $(app-fields) \"-mcpu=cortex-r5\"" ;
-        lines += "configapp -app $(app) -add $(app-fields) \"-mfpu=vfpv3-d16\"" ;
-    }
-    for local t in [ feature.get-values <cflags> : $(properties) ]
-    {
-      if $(t) in $(interesting-compiler-flags)
-      {
-        lines += "configapp -app $(app) -add $(app-fields) \"$(t)\"" ;
-      }
-    }
-    for local t in [ feature.get-values <linkflags> : $(properties) ]
-    {
-      if $(t) in $(interesting-compilerflags)
-      {
-        lines += "configapp -app $(app) -add $(app-fields) \"$(t)\"" ;
-      }
-    }
-
-    # print the actual application configuration
-    lines +=
-      "foreach line [split [configapp] \"\n\"] {"
-      "    regexp { *([^ ]+) .+ *} $line ignored option"
-      "    puts $actual_configuration \"app $(app) $option: [configapp -app $(app) $option]\""
-      "}"
-      ;
+    case cortex-a9 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-a9\"" ;
+    case cortex-a9+vfpv3 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-a9\"" ;
+      lines += "configapp -app app -add $(app-fields) \"-mfpu=vfpv3\"" ;
+    case cortex-a53 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-a53\"" ;
+    case cortex-a53+vfpv3 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-a53\"" ;
+      lines += "configapp -app app -add $(app-fields) \"-mfpu=vfpv3\"" ;
+    case cortex-r5 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-r5\"" ;
+    case cortex-r5+vfpv3-d16 :
+      lines += "configapp -app app -add $(app-fields) \"-mcpu=cortex-r5\"" ;
+      lines += "configapp -app app -add $(app-fields) \"-mfpu=vfpv3-d16\"" ;
   }
+  for local t in [ feature.get-values <cflags> : $(properties) ]
+  {
+    if $(t) in $(interesting-compiler-flags)
+    {
+      lines += "configapp -app app -add $(app-fields) \"$(t)\"" ;
+    }
+  }
+  for local t in [ feature.get-values <linkflags> : $(properties) ]
+  {
+    if $(t) in $(interesting-compilerflags)
+    {
+      lines += "configapp -app app -add $(app-fields) \"$(t)\"" ;
+    }
+  }
+
+  # print the actual application configuration
+  lines +=
+    "foreach line [split [configapp] \"\n\"] {"
+    "    regexp { *([^ ]+) .+ *} $line ignored option"
+    "    puts $actual_configuration \"app app $option: [configapp -app app $option]\""
+    "}"
+    ;
 
   lines += "close $possible_configuration" ;
   lines += "close $original_configuration" ;
