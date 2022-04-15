@@ -12,6 +12,8 @@ project
 
     <instruction-set>cortex-a53
     <instruction-set>cortex-r5+vfpv3-d16
+  : requirements
+    <link>static
   ;
 
 # @todo add more configurations for freertos
@@ -21,8 +23,6 @@ xsdkws ws
   : # sources
     $(zcu102-hdf)
   : # requirements
-    <link>static
-
     <target-os>elf:<xsdk-template>"Hello World"
     <target-os>freertos:<xsdk-template>"FreeRTOS Hello World"
   : # default-build
@@ -37,7 +37,5 @@ exe hello
     platform_config.h
     platform.h
   : # requirements
-    <link>static
-
     <dependency>ws
   ;
