@@ -8,6 +8,7 @@ project
     <target-os>elf
     <target-os>freertos
 
+    <architecture>
     <architecture>arm
 
     # @todo Xilinx cortex-a9 boot.S requires vfpv3
