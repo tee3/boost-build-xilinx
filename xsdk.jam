@@ -533,11 +533,6 @@ class ws-generator : generator
     property-set = [ $(property-set).add-raw <relevant>cflags ] ;
     property-set = [ $(property-set).add-raw <relevant>linkflags ] ;
 
-    if [ $(property-set).get <link> ] != static
-    {
-      errors.error "<link> must be static" ;
-    }
-
     if ! [ $(property-set).get <architecture> ]
     {
       errors.error "<architecture> must be set" ;
@@ -914,7 +909,7 @@ class ws-generator : generator
 }
 
 # @todo loop and generate many generators for each supported configuration?
-generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN BIT MSS TCL : <toolset>gcc <link>static ] ;
+generators.register [ class.new ws-generator xsdk.generate-ws-elf : HDF : XSDKWS XSCT XSCTRUN BIT MSS TCL : <toolset>gcc ] ;
 
 # Generate an XSCT script to build the XSDK Workspace.
 rule generate-build ( targets + : sources + : properties * )
