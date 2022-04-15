@@ -128,14 +128,21 @@ projects -build -type app -name app
 
 = Toolsets
 
-This module supports the processor-specific `gcc` toolsets delivered
-within the Xilinx XSDK.
+This module supports any `gcc` toolset.  The user is responsible for
+configuring the desired toolset for each processor.
 
 Note that in order to choose the correct toolset, the toolset should
 be made conditional on the `instruction-set` in the build system.
 One approach for doing this would be to set project requirements in
 the Jamroot.  This is required because the `toolset` feature cannot
 set in `usage-requirements`.
+
+The example below shows the configuration of the toolsets delivered
+with the Xilinx SDK for each different processor supported by the
+Xilinx SDK if the Xilinx SDK is installed.  If the Xilinx SDK is not
+installed, it uses another third-party toolset.  Note that there is
+nothing special about the name of the toolset, it is defined by the
+user.
 
 .`project-config.jam`
 [source, jam]
