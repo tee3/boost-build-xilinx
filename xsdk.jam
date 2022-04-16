@@ -277,6 +277,7 @@ import os ;
 import path ;
 import common ;
 import print ;
+import regex ;
 import sequence ;
 import errors ;
 import assert ;
@@ -1011,14 +1012,9 @@ rule generate-build ( targets + : sources + : properties * )
 
   # flags to track between desired build and BSP
   local interesting-compiler-flags =
-    -mcpu=cortex-a9
-    -mcpu=cortex-a53
-    -mcpu=cortex-r5
-    -mfpu=vfpv3
-    -mfpu=vfpv3-d16
-    -mfloat-abi=hard
-    -mfloat-abi=soft
-    -mfloat-abi=softfp
+    -mcpu
+    -mfpu
+    -mfloat-abi
     ;
 
   # remove all interesting compiler flags from BSP
@@ -1027,7 +1023,7 @@ rule generate-build ( targets + : sources + : properties * )
     "lappend interesting_compiler_flags \"$(interesting-compiler-flags)\""
     "set compiler_flags [list]"
     "foreach word [split [configbsp -bsp bsp compiler_flags] \" \"] {"
-    "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
     "        continue"
     "    }"
     "    lappend compiler_flags $word"
@@ -1035,7 +1031,7 @@ rule generate-build ( targets + : sources + : properties * )
     "configbsp -bsp bsp compiler_flags [join $compiler_flags \" \"]"
     "set extra_compiler_flags [list]"
     "foreach word [split [configbsp -bsp bsp extra_compiler_flags] \" \"] {"
-    "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+    "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
     "        continue"
     "    }"
     "    lappend extra_compiler_flags $word"
@@ -1047,14 +1043,16 @@ rule generate-build ( targets + : sources + : properties * )
   # check also within <cflags> and <linkflags>
   for local t in [ feature.get-values <cflags> : $(properties) ]
   {
-    if $(t) in $(interesting-compiler-flags)
+    local f = [ regex.match "(.+)[ =](.+)" : $(t) : 0 ] ;
+    if $(f) in $(interesting-compiler-flags)
     {
       lines += "configbsp -bsp bsp -append $(bsp-fields) \"$(t)\"" ;
     }
   }
   for local t in [ feature.get-values <linkflags> : $(properties) ]
   {
-    if $(t) in $(interesting-compilerflags)
+    local f = [ regex.match "(.+)[ =](.+)" : $(t) : 0 ] ;
+    if $(f) in $(interesting-compilerflags)
     {
       lines += "configbsp -bsp bsp -append $(bsp-fields) \"$(t)\"" ;
     }
@@ -1105,7 +1103,7 @@ rule generate-build ( targets + : sources + : properties * )
   # lines +=
   #   "set compiler_misc [list]"
   #   "foreach word [split [configapp -app app compiler-misc] \" \"] {"
-  #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+  #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
   #   "        continue"
   #   "    }"
   #   "    lappend compiler_misc $word"
@@ -1113,7 +1111,7 @@ rule generate-build ( targets + : sources + : properties * )
   #   "configapp -app app -set compiler-misc [join $compiler_misc \" \"]"
   #   "set linker_misc [list]"
   #   "foreach word [split [configapp -app app linker-misc] \" \"] {"
-  #   "    if {[lsearch -exact $interesting_compiler_flags $word] >= 0} then {"
+  #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
   #   "        continue"
   #   "    }"
   #   "    lappend linker_misc $word"
@@ -1123,14 +1121,16 @@ rule generate-build ( targets + : sources + : properties * )
   local app-fields = compiler-misc linker-misc ;
   for local t in [ feature.get-values <cflags> : $(properties) ]
   {
-    if $(t) in $(interesting-compiler-flags)
+    local f = [ regex.match "(.+)[ =](.+)" : $(t) : 0 ] ;
+    if $(f) in $(interesting-compiler-flags)
     {
       lines += "configapp -app app -add $(app-fields) \"$(t)\"" ;
     }
   }
   for local t in [ feature.get-values <linkflags> : $(properties) ]
   {
-    if $(t) in $(interesting-compilerflags)
+    local f = [ regex.match "(.+)[ =](.+)" : $(t) : 0 ] ;
+    if $(f) in $(interesting-compilerflags)
     {
       lines += "configapp -app app -add $(app-fields) \"$(t)\"" ;
     }
