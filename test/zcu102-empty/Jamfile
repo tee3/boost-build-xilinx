@@ -8,6 +8,7 @@ project
     <target-os>elf
     <target-os>freertos
 
+    <architecture>
     <architecture>arm
 
     <instruction-set>cortex-a53
@@ -15,6 +16,8 @@ project
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1
+  : requirements
+    <link>static
   ;
 
 # @todo for now this must be explicit
@@ -23,7 +26,6 @@ xsdkws ws
   : # sources
     $(zcu102-hdf)
   : # requirements
-    <link>static
   : # default-build
   : # usage-requirements
     <linkflags>"-Wl,-T -Wl,lscript.ld"
@@ -33,8 +35,6 @@ exe empty_c
   : # sources
     empty_c.c
   : # requirements
-    <link>static
-
     <dependency>ws
   ;
 
@@ -42,8 +42,6 @@ exe empty_cpp
   : # sources
     empty_cpp.cpp
   : # requirements
-    <link>static
-
     <dependency>ws
 
     <linkflags>"-Wl,--start-group -Wl,-lstdc++ -Wl,--end-group"

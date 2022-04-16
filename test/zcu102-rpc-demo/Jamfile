@@ -15,8 +15,6 @@ xsdkws ws
 
     <link>static
 
-    <architecture>arm
-
     <instruction-set>cortex-r5+vfpv3-d16
 
     <xsdk-template>"OpenAMP RPC Demo"
@@ -44,8 +42,6 @@ exe rpc-demo
     <target-os>freertos
 
     <link>static
-
-    <architecture>arm
 
     <instruction-set>cortex-r5+vfpv3-d16
 
