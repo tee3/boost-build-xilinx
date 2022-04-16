@@ -527,6 +527,7 @@ rule version ( )
 # A generator to create an XSDK Workspace.
 class ws-generator : generator
 {
+  import regex ;
   import string ;
   import errors ;
   import assert ;
@@ -627,12 +628,9 @@ class ws-generator : generator
 
     local instruction-set = [ $(property-set).get <instruction-set> ] ;
 
-    switch $(instruction-set)
+    switch [ regex.match "([^+]+)" : $(instruction-set) : 0 ]
     {
       case cortex-a9 :
-          ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
-          ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
-      case cortex-a9+vfpv3 :
           ps = [ $(ps).add-raw <linkflags>"-Wl,-build-id=none" ] ;
           ps = [ $(ps).add-raw <linkflags>-specs="$(ws-dir)/app/src/Xilinx.spec" ] ;
     }
@@ -852,13 +850,11 @@ class ws-generator : generator
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
-    switch $(value)
+    switch [ regex.match "([^+]+)" : $(value) : 0 ]
     {
       case cortex-a9 : tmp = cortexa9 ;
-      case cortex-a9+vfpv3 : tmp = cortexa9 ;
       case cortex-a53 : tmp = cortexa53 ;
       case cortex-r5 : tmp = cortexr5 ;
-      case cortex-r5+vfpv3-d16 : tmp = cortexr5 ;
       case microblaze : tmp = microblaze ;
     }
 
@@ -874,13 +870,11 @@ class ws-generator : generator
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
-    switch $(value)
+    switch [ regex.match "([^+]+)" : $(value) : 0 ]
     {
       case cortex-a9 : tmp = ps7 ;
-      case cortex-a9+vfpv3 : tmp = ps7 ;
       case cortex-a53 : tmp = psu ;
       case cortex-r5 : tmp = psu ;
-      case cortex-r5+vfpv3-d16 : tmp = psu ;
       case microblaze : tmp = psu ;
     }
 
@@ -896,10 +890,9 @@ class ws-generator : generator
     assert.in $(value) : [ feature.values <instruction-set> ] ;
 
     local tmp ;
-    switch $(value)
+    switch [ regex.match "([^+]+)" : $(value) : 0 ]
     {
       case cortex-r5 : tmp += ARMR5 ;
-      case cortex-r5+vfpv3-d16 : tmp += ARMR5 ;
     }
 
     return $(tmp) ;
