@@ -20,7 +20,6 @@ project
     <link>static
   ;
 
-# @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
   : # sources

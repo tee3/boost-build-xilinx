@@ -5,7 +5,6 @@
 
 path-constant root : ../.. ;
 
-# @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
   : # sources
