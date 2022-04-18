@@ -18,7 +18,6 @@ project
   ;
 
 # @todo add more configurations for freertos
-# @todo for now this must be explicit
 explicit ws ;
 xsdkws ws
   : # sources
