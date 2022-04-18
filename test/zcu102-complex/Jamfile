@@ -3,6 +3,8 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+path-constant root : ../.. ;
+
 project
   : default-build
     <target-os>elf
@@ -38,7 +40,7 @@ exe complex
     h0.hpp
     h0.cpp
 
-    liba//a
+    $(root)/test/liba//a
   : # requirements
     <dependency>ws
 
