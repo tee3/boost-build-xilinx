@@ -36,6 +36,8 @@ exe hello
     platform.c
     platform_config.h
     platform.h
+
+    ws
   : # requirements
     <dependency>ws
   ;

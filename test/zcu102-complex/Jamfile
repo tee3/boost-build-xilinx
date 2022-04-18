@@ -40,6 +40,8 @@ exe complex
     h0.cpp
 
     $(root)/test/liba//a
+
+    ws
   : # requirements
     <dependency>ws
 
