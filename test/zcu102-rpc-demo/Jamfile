@@ -37,6 +37,8 @@ exe rpc-demo
 
     rsc_table.c
     rsc_table.h
+
+    ws
   : # requirements
     <target-os>freertos
 

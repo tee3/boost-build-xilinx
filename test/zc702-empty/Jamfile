@@ -34,6 +34,8 @@ xsdkws ws
 exe empty_c
   : # sources
     empty_c.c
+
+    ws
   : # requirements
     <dependency>ws
   ;
@@ -41,6 +43,8 @@ exe empty_c
 exe empty_cpp
   : # sources
     empty_cpp.cpp
+
+    ws
   : # requirements
     <dependency>ws
 
