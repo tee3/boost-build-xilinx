@@ -22,7 +22,6 @@ xsdkws ws
     <xsdk-library>openamp
   : # default-build
   : # usage-requirements
-    <linkflags>"-Wl,-T -Wl,$(root)/test/zcu102-rpc-demo/lscript.ld"
   ;
 
 exe rpc-demo
@@ -45,6 +44,8 @@ exe rpc-demo
     <link>static
 
     <instruction-set>cortex-r5+vfpv3-d16
+
+    <linkflags>"-Wl,-T -Wl,$(root)/test/zcu102-rpc-demo/lscript.ld"
 
     <dependency>ws
   ;
