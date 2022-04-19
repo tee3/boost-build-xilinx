@@ -117,7 +117,6 @@ something like the following.
 [source, tcl]
 ----
 createapp -name app       -app {$(xsdk-template)}  -lang c -bsp bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)
-projects -build -type app -name app
 
 ----
 
