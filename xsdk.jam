@@ -1013,22 +1013,22 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "set interesting_compiler_flags [list]"
     "lappend interesting_compiler_flags \"$(interesting-compiler-flags)\""
-    "set compiler_flags [list]"
+    "set flags [list]"
     "foreach word [split [configbsp -bsp bsp compiler_flags] \" \"] {"
     "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
     "        continue"
     "    }"
-    "    lappend compiler_flags $word"
+    "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp compiler_flags [join $compiler_flags \" \"]"
-    "set extra_compiler_flags [list]"
+    "configbsp -bsp bsp compiler_flags [join $flags \" \"]"
+    "set flags [list]"
     "foreach word [split [configbsp -bsp bsp extra_compiler_flags] \" \"] {"
     "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
     "        continue"
     "    }"
-    "    lappend extra_compiler_flags $word"
+    "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp extra_compiler_flags [join $extra_compiler_flags \" \"]"
+    "configbsp -bsp bsp extra_compiler_flags [join $flags \" \"]"
     ;
   # check against standard features
   local bsp-fields = compiler_flags extra_compiler_flags ;
@@ -1093,22 +1093,22 @@ rule generate-build ( targets + : sources + : properties * )
   # @todo compiler flags cannot be removed from application configration
   # # remove all interesting compiler flags from application
   # lines +=
-  #   "set compiler_misc [list]"
+  #   "set flags [list]"
   #   "foreach word [split [configapp -app app compiler-misc] \" \"] {"
   #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
   #   "        continue"
   #   "    }"
-  #   "    lappend compiler_misc $word"
+  #   "    lappend flags $word"
   #   "}"
-  #   "configapp -app app -set compiler-misc [join $compiler_misc \" \"]"
-  #   "set linker_misc [list]"
+  #   "configapp -app app -set compiler-misc [join $flags \" \"]"
+  #   "set flags [list]"
   #   "foreach word [split [configapp -app app linker-misc] \" \"] {"
   #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
   #   "        continue"
   #   "    }"
-  #   "    lappend linker_misc $word"
+  #   "    lappend flags $word"
   #   "}"
-  #   "configapp -app app -set linker-misc [join $linker_misc \" \"]"
+  #   "configapp -app app -set linker-misc [join $flags \" \"]"
   #   ;
   local app-fields = compiler-misc linker-misc ;
   for local t in [ feature.get-values <cflags> : $(properties) ]
