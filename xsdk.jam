@@ -971,9 +971,9 @@ rule generate-build ( targets + : sources + : properties * )
   lines += "run-checked setws -switch $(ws)" ;
 
   # channels to capture the configurations
-  lines += "set possible_configuration [open $(ws)/../possible_configuration.txt w]" ;
-  lines += "set original_configuration [open $(ws)/../original_configuration.txt w]" ;
-  lines += "set actual_configuration [open $(ws)/../actual_configuration.txt w]" ;
+  lines += "set configurations_f [open $(ws)/../configurations.txt w]" ;
+  lines += "set configuration_original_f [open $(ws)/../configuration-original.txt w]" ;
+  lines += "set configuration_actual_f [open $(ws)/../configuration-actual.txt w]" ;
 
   # create the hardware
   lines += "run-checked createhw -name hw -hwspec $(hdf)" ;
@@ -981,9 +981,9 @@ rule generate-build ( targets + : sources + : properties * )
   # create and configure the bsp
   lines += "run-checked createbsp -name bsp -proc $(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id) -hwproject hw -os $(xsdk-os)" ;
 
-  lines += "puts $possible_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
-  lines += "puts $possible_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
-  lines += "puts $possible_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+  lines += "puts $configurations_f \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $configurations_f \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $configurations_f \"bsp libraries:\n[getlib -bsp bsp]\"" ;
 
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
@@ -994,12 +994,12 @@ rule generate-build ( targets + : sources + : properties * )
     lines += "configbsp -bsp bsp $(c)" ;
   }
 
-  lines += "puts $original_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
-  lines += "puts $original_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
-  lines += "puts $original_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+  lines += "puts $configuration_original_f \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $configuration_original_f \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $configuration_original_f \"bsp libraries:\n[getlib -bsp bsp]\"" ;
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
-    lines += "puts $original_configuration \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
+    lines += "puts $configuration_original_f \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
   }
 
   # flags to track between desired build and BSP
@@ -1013,22 +1013,34 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "set interesting_compiler_flags [list]"
     "lappend interesting_compiler_flags \"$(interesting-compiler-flags)\""
-    "set compiler_flags [list]"
-    "foreach word [split [configbsp -bsp bsp compiler_flags] \" \"] {"
-    "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
+    "set s [regsub -all \" +\" [string trim [configbsp -bsp bsp compiler_flags]] \" \"]"
+    "set flags [list]"
+    "foreach word [split $s \" \"] {"
+    "    if {[lsearch -glob $interesting_compiler_flags [lindex [split $word \"=\"] 0]] >= 0} then {"
     "        continue"
     "    }"
-    "    lappend compiler_flags $word"
+    "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp compiler_flags [join $compiler_flags \" \"]"
-    "set extra_compiler_flags [list]"
-    "foreach word [split [configbsp -bsp bsp extra_compiler_flags] \" \"] {"
-    "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
+    "set s [join $flags \" \"]"
+    "configbsp -bsp bsp compiler_flags \"$s\""
+    "if {[string equal [configbsp -bsp bsp compiler_flags] $s] == 0} then {"
+    "    puts stderr \"xdsk:error: compiler_flags do not match.\""
+    "    exit 1"
+    "}"
+    "set s [regsub -all \" +\" [string trim [configbsp -bsp bsp extra_compiler_flags]] \" \"]"
+    "set flags [list]"
+    "foreach word [split $s \" \"] {"
+    "    if {[lsearch -glob $interesting_compiler_flags [lindex [split $word \"=\"] 0]] >= 0} then {"
     "        continue"
     "    }"
-    "    lappend extra_compiler_flags $word"
+    "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp extra_compiler_flags [join $extra_compiler_flags \" \"]"
+    "set s [join $flags \" \"]"
+    "configbsp -bsp bsp extra_compiler_flags \"$s\""
+    "if {[string equal [configbsp -bsp bsp extra_compiler_flags] $s] == 0} then {"
+    "    puts stderr \"xdsk:error: extra_compiler_flags do not match.\""
+    "    exit 1"
+    "}"
     ;
   # check against standard features
   local bsp-fields = compiler_flags extra_compiler_flags ;
@@ -1051,12 +1063,12 @@ rule generate-build ( targets + : sources + : properties * )
   }
 
   # print the actual BSP configuration
-  lines += "puts $actual_configuration \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
-  lines += "puts $actual_configuration \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
-  lines += "puts $actual_configuration \"bsp libraries:\n[getlib -bsp bsp]\"" ;
+  lines += "puts $configuration_actual_f \"bsp operating system:\n[configbsp -bsp bsp -os]\"" ;
+  lines += "puts $configuration_actual_f \"bsp processor:\n[configbsp -bsp bsp -proc]\"" ;
+  lines += "puts $configuration_actual_f \"bsp libraries:\n[getlib -bsp bsp]\"" ;
   for local l in [ feature.get-values <xsdk-library> : $(properties) ]
   {
-    lines += "puts $actual_configuration \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
+    lines += "puts $configuration_actual_f \"library $(l):\n[configbsp -bsp bsp -lib $(l)]\"" ;
   }
 
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
@@ -1078,7 +1090,7 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "foreach line [split [configapp] \"\n\"] {"
     "    regexp { *([^ ]+) .+ *} $line ignored option"
-    "    puts $possible_configuration \"app app $option:\n[configapp -app app -info $option]\""
+    "    puts $configurations_f \"app app $option:\n[configapp -app app -info $option]\""
     "}"
     ;
 
@@ -1086,30 +1098,41 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "foreach line [split [configapp] \"\n\"] {"
     "    regexp { *([^ ]+) .+ *} $line ignored option"
-    "    puts $original_configuration \"app app $option: [configapp -app app $option]\""
+    "    puts $configuration_original_f \"app app $option: [configapp -app app $option]\""
     "}"
     ;
 
-  # @todo compiler flags cannot be removed from application configration
-  # # remove all interesting compiler flags from application
-  # lines +=
-  #   "set compiler_misc [list]"
-  #   "foreach word [split [configapp -app app compiler-misc] \" \"] {"
-  #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
-  #   "        continue"
-  #   "    }"
-  #   "    lappend compiler_misc $word"
-  #   "}"
-  #   "configapp -app app -set compiler-misc [join $compiler_misc \" \"]"
-  #   "set linker_misc [list]"
-  #   "foreach word [split [configapp -app app linker-misc] \" \"] {"
-  #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
-  #   "        continue"
-  #   "    }"
-  #   "    lappend linker_misc $word"
-  #   "}"
-  #   "configapp -app app -set linker-misc [join $linker_misc \" \"]"
-  #   ;
+  # remove all interesting compiler flags from application
+  lines +=
+    "set s [regsub -all \" +\" [string trim [configapp -app app compiler-misc]] \" \"]"
+    "set flags [list]"
+    "foreach word [split $s \" \"] {"
+    "    if {[lsearch -glob $interesting_compiler_flags [lindex [split $word \"=\"] 0]] >= 0} then {"
+    "        continue"
+    "    }"
+    "    lappend flags $word"
+    "}"
+    "set s [join $flags \" \"]"
+    "configapp -app app -set compiler-misc \"$s\""
+    "if {[string equal [configapp -app app compiler-misc] $s] == 0} then {"
+    "    puts stderr \"xdsk:error: compiler-misc do not match.\""
+    "    exit 1"
+    "}"
+    "set s [regsub -all \" +\" [string trim [configapp -app app linker-misc]] \" \"]"
+    "set flags [list]"
+    "foreach word [split $s \" \"] {"
+    "    if {[lsearch -glob $interesting_compiler_flags [lindex [split $word \"=\"] 0]] >= 0} then {"
+    "        continue"
+    "    }"
+    "    lappend flags $word"
+    "}"
+    "set s [join $flags \" \"]"
+    "configapp -app app -set linker-misc \"$s\""
+    "if {[string equal [configapp -app app linker-misc] $s] == 0} then {"
+    "    puts stderr \"xdsk:error: linker-misc do not match.\""
+    "    exit 1"
+    "}"
+    ;
   local app-fields = compiler-misc linker-misc ;
   for local t in [ feature.get-values <cflags> : $(properties) ]
   {
@@ -1132,13 +1155,13 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "foreach line [split [configapp] \"\n\"] {"
     "    regexp { *([^ ]+) .+ *} $line ignored option"
-    "    puts $actual_configuration \"app app $option: [configapp -app app $option]\""
+    "    puts $configuration_actual_f \"app app $option: [configapp -app app $option]\""
     "}"
     ;
 
-  lines += "close $possible_configuration" ;
-  lines += "close $original_configuration" ;
-  lines += "close $actual_configuration" ;
+  lines += "close $configurations_f" ;
+  lines += "close $configuration_original_f" ;
+  lines += "close $configuration_actual_f" ;
 
   print.output $(target) ;
   print.text "#!/usr/bin/env xsct" : true ;
