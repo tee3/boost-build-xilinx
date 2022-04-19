@@ -1207,7 +1207,7 @@ rule generate-run ( targets + : sources + : properties * )
 
     "set jtag_cable_name \"*\""
 
-    "if {! [file exists $ws]} {"
+    "if {! [file exists $ws]} then {"
     "    puts \"error: workspace $ws does not exist\""
     "    exit 1"
     "}"
