@@ -13,6 +13,10 @@ project
 
     <instruction-set>cortex-a53
     <instruction-set>cortex-r5+vfpv3-d16
+
+    <floating-point-abi>hard
+    <floating-point-abi>softfp
+    <floating-point-abi>soft
   : requirements
     <link>static
   ;
@@ -40,4 +44,7 @@ exe hello
     ws
   : # requirements
     <dependency>ws
+
+    # @todo required since Xilinx SDK has a bug
+    <instruction-set>cortex-r5+vfpv3-d16:<floating-point-abi>softfp
   ;

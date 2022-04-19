@@ -15,6 +15,11 @@ project
     # <instruction-set>cortex-a9
     <instruction-set>cortex-a9+vfpv3
 
+    <floating-point-abi>hard
+    <floating-point-abi>softfp
+    # @todo issue in Xilinx tool prevents this
+    # <floating-point-abi>soft
+
     <xsdk-processor-id>0
     <xsdk-processor-id>1
   : requirements
