@@ -1021,7 +1021,8 @@ rule generate-build ( targets + : sources + : properties * )
     "    }"
     "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp compiler_flags [join $flags \" \"]"
+    "set s [join $flags \" \"]"
+    "configbsp -bsp bsp compiler_flags \"$s\""
     "set s [regsub -all \" +\" [string trim [configbsp -bsp bsp extra_compiler_flags]] \" \"]"
     "set flags [list]"
     "foreach word [split $s \" \"] {"
@@ -1030,7 +1031,8 @@ rule generate-build ( targets + : sources + : properties * )
     "    }"
     "    lappend flags $word"
     "}"
-    "configbsp -bsp bsp extra_compiler_flags [join $flags \" \"]"
+    "set s [join $flags \" \"]"
+    "configbsp -bsp bsp extra_compiler_flags \"$s\""
     ;
   # check against standard features
   local bsp-fields = compiler_flags extra_compiler_flags ;
@@ -1103,7 +1105,8 @@ rule generate-build ( targets + : sources + : properties * )
   #   "    }"
   #   "    lappend flags $word"
   #   "}"
-  #   "configapp -app app -set compiler-misc [join $flags \" \"]"
+  #   "set s [join $flags \" \"]"
+  #   "configapp -app app -set compiler-misc \"$s\""
   #   "set s [regsub -all \" +\" [string trim [configapp -app app linker-misc]] \" \"]"
   #   "set flags [list]"
   #   "foreach word [split $s \" \"] {"
@@ -1112,7 +1115,8 @@ rule generate-build ( targets + : sources + : properties * )
   #   "    }"
   #   "    lappend flags $word"
   #   "}"
-  #   "configapp -app app -set linker-misc [join $flags \" \"]"
+  #   "set s [join $flags \" \"]"
+  #   "configapp -app app -set linker-misc \"$s\""
   #   ;
   local app-fields = compiler-misc linker-misc ;
   for local t in [ feature.get-values <cflags> : $(properties) ]
