@@ -1013,7 +1013,7 @@ rule generate-build ( targets + : sources + : properties * )
   lines +=
     "set interesting_compiler_flags [list]"
     "lappend interesting_compiler_flags \"$(interesting-compiler-flags)\""
-    "set s [configbsp -bsp bsp compiler_flags]"
+    "set s [regsub -all \" +\" [string trim [configbsp -bsp bsp compiler_flags]] \" \"]"
     "set flags [list]"
     "foreach word [split $s \" \"] {"
     "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
@@ -1022,7 +1022,7 @@ rule generate-build ( targets + : sources + : properties * )
     "    lappend flags $word"
     "}"
     "configbsp -bsp bsp compiler_flags [join $flags \" \"]"
-    "set s [configbsp -bsp bsp extra_compiler_flags]"
+    "set s [regsub -all \" +\" [string trim [configbsp -bsp bsp extra_compiler_flags]] \" \"]"
     "set flags [list]"
     "foreach word [split $s \" \"] {"
     "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
@@ -1095,7 +1095,7 @@ rule generate-build ( targets + : sources + : properties * )
   # @todo compiler flags cannot be removed from application configration
   # # remove all interesting compiler flags from application
   # lines +=
-  #   "set s [configapp -app app compiler-misc]"
+  #   "set s [regsub -all \" +\" [string trim [configapp -app app compiler-misc]] \" \"]"
   #   "set flags [list]"
   #   "foreach word [split $s \" \"] {"
   #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
@@ -1104,7 +1104,7 @@ rule generate-build ( targets + : sources + : properties * )
   #   "    lappend flags $word"
   #   "}"
   #   "configapp -app app -set compiler-misc [join $flags \" \"]"
-  #   "set s [configapp -app app linker-misc]"
+  #   "set s [regsub -all \" +\" [string trim [configapp -app app linker-misc]] \" \"]"
   #   "set flags [list]"
   #   "foreach word [split $s \" \"] {"
   #   "    if {[lsearch -glob $interesting_compiler_flags $word=*] >= 0} then {"
