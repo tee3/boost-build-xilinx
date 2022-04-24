@@ -5,16 +5,16 @@
 
 project
   : default-build
-    <platform>elf--cortex-a53-hard
-    <platform>elf--cortex-a53-softfp
-    <platform>elf--cortex-a53-soft
-    <platform>elf--cortex-r5+vfpv3-d16-hard
-    <platform>elf--cortex-r5+vfpv3-d16-softfp
-    <platform>elf-arm-cortex-a53-hard
-    <platform>elf-arm-cortex-a53-softfp
-    <platform>elf-arm-cortex-a53-soft
-    <platform>elf-arm-cortex-r5+vfpv3-d16-hard
-    <platform>elf-arm-cortex-r5+vfpv3-d16-softfp
+    <platform>elf--cortex-a53--hard
+    <platform>elf--cortex-a53--softfp
+    <platform>elf--cortex-a53--soft
+    <platform>elf--cortex-r5+vfpv3-d16--hard
+    <platform>elf--cortex-r5+vfpv3-d16--softfp
+    <platform>elf-arm-cortex-a53--hard
+    <platform>elf-arm-cortex-a53--softfp
+    <platform>elf-arm-cortex-a53--soft
+    <platform>elf-arm-cortex-r5+vfpv3-d16--hard
+    <platform>elf-arm-cortex-r5+vfpv3-d16--softfp
   : requirements
     <link>static
   ;

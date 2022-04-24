@@ -469,6 +469,48 @@ for local t in $(instruction-set-supported)
   }
 }
 
+# @todo until all floating-point-unit supported in Boost.Build
+if ! [ feature.valid <floating-point-unit> ]
+{
+   ECHO "xsdk:warning: <floating-point-unit> feature is not supported in Boost.Build." ;
+
+  feature.feature floating-point-unit
+    :
+      # values added below
+    :
+      optional
+    ;
+}
+
+local floating-point-unit-supported =
+  vfpv3
+  vfpv3-d16
+  nofp
+  ;
+for local t in $(floating-point-unit-supported)
+{
+  local floating-point-unit-values = [ feature.values <floating-point-unit> ] ;
+  if ! $(t) in $(floating-point-unit-values)
+  {
+    ECHO "xsdk:warning: <floating-point-unit>$(t) is not supported in Boost.Build." ;
+
+    feature.extend floating-point-unit : $(t) ;
+
+    switch $(t)
+    {
+      case vfpv3 :
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>vfpv3:<cflags>-mfpu=vfpv3 ;
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>vfpv3:<linkflags>-mfpu=vfpv3 ;
+      case vfpv3-d16 :
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>vfpv3-d16:<cflags>-mfpu=vfpv3-d16 ;
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>vfpv3-d16:<linkflags>-mfpu=vfpv3-d16 ;
+      case nofp :
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>nofp:<cflags>-mfpu=nofp ;
+        toolset.add-requirements <toolset>gcc,<floating-point-unit>nofp:<linkflags>-mfpu=nofp ;
+    }
+  }
+}
+
 type.register XSDKWS : xsdkws ;
 
 type.register HDF : hdf ;
@@ -616,6 +658,7 @@ class ws-generator : generator
     property-set = [ $(property-set).add-raw <relevant>link ] ;
     property-set = [ $(property-set).add-raw <relevant>architecture ] ;
     property-set = [ $(property-set).add-raw <relevant>instruction-set ] ;
+    property-set = [ $(property-set).add-raw <relevant>floating-point-unit ] ;
     property-set = [ $(property-set).add-raw <relevant>floating-point-abi ] ;
     property-set = [ $(property-set).add-raw <relevant>optimization ] ;
     property-set = [ $(property-set).add-raw <relevant>profiling ] ;
