@@ -366,11 +366,6 @@ for local t in $(architecture-supported)
 }
 
 # @todo until supported in Boost.Build
-local floating-point-abi-supported =
-  hard
-  soft
-  softfp
-  ;
 if ! [ feature.valid <floating-point-abi> ]
 {
    ECHO "xsdk:warning: <floating-point-abi> feature is not supported in Boost.Build." ;
@@ -385,6 +380,11 @@ if ! [ feature.valid <floating-point-abi> ]
     ;
 }
 
+local floating-point-abi-supported =
+  hard
+  soft
+  softfp
+  ;
 for local t in $(floating-point-abi-supported)
 {
   local floating-point-abi-values = [ feature.values <floating-point-abi> ] ;
