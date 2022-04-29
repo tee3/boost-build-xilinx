@@ -305,7 +305,9 @@ feature.feature xsdk-fpga
     xczu6eg
     xczu7eg
   :
-    propagated link-incompatible symmetric
+    propagated
+    link-incompatible
+    symmetric
   ;
 feature.set-default xsdk-fpga : xczu7eg ;
 
@@ -315,7 +317,8 @@ feature.feature xsdk-os
     freertos10_xilinx
     xilkernel
   : # attributes
-    propagated optional
+    propagated
+    optional
   ;
 
 # @todo until all target-os supported in Boost.Build
@@ -346,7 +349,8 @@ feature.feature xsdk-instruction-set
     # xilinx
     microblaze
   : # attributes
-    propagated optional
+    propagated
+    optional
   ;
 
 # @todo until all architecture supported in Boost.Build
