@@ -5,18 +5,38 @@
 
 project
   : default-build
-    <target-os>elf
-    <target-os>freertos
-
-    <architecture>
-    <architecture>arm
-
-    <instruction-set>cortex-a53
-    <instruction-set>cortex-r5+vfpv3-d16
-
-    <floating-point-abi>hard
-    <floating-point-abi>softfp
-    <floating-point-abi>soft
+    <platform>elf--cortex-a53-hard
+    <platform>elf--cortex-a53-softfp
+    <platform>elf--cortex-a53-soft
+    # @todo enable soon
+    # <platform>elf--cortex-r5+vfpv3-d16-hard
+    <platform>elf--cortex-r5+vfpv3-d16-softfp
+    # @todo enable soon
+    # <platform>elf--cortex-r5+vfpv3-d16-soft
+    <platform>elf-arm-cortex-a53-hard
+    <platform>elf-arm-cortex-a53-softfp
+    <platform>elf-arm-cortex-a53-soft
+    # @todo enable soon
+    # <platform>elf-arm-cortex-r5+vfpv3-d16-hard
+    <platform>elf-arm-cortex-r5+vfpv3-d16-softfp
+    # @todo enable soon
+    # <platform>elf-arm-cortex-r5+vfpv3-d16-soft
+    <platform>freertos--cortex-a53-hard
+    <platform>freertos--cortex-a53-softfp
+    <platform>freertos--cortex-a53-soft
+    # @todo required since Xilinx SDK has a bug
+    # <platform>freertos--cortex-r5+vfpv3-d16-hard
+    <platform>freertos--cortex-r5+vfpv3-d16-softfp
+    # @todo required since Xilinx SDK has a bug
+    # <platform>freertos--cortex-r5+vfpv3-d16-soft
+    <platform>freertos-arm-cortex-a53-hard
+    <platform>freertos-arm-cortex-a53-softfp
+    <platform>freertos-arm-cortex-a53-soft
+    # @todo required since Xilinx SDK has a bug
+    # <platform>freertos-arm-cortex-r5+vfpv3-d16-hard
+    <platform>freertos-arm-cortex-r5+vfpv3-d16-softfp
+    # @todo required since Xilinx SDK has a bug
+    # <platform>freertos-arm-cortex-r5+vfpv3-d16-soft
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1
@@ -41,9 +61,6 @@ exe empty_c
     ws
   : # requirements
     <dependency>ws
-
-    # @todo required since Xilinx SDK has a bug
-    <instruction-set>cortex-r5+vfpv3-d16:<floating-point-abi>softfp
   ;
 
 exe empty_cpp
@@ -53,9 +70,6 @@ exe empty_cpp
     ws
   : # requirements
     <dependency>ws
-
-    # @todo required since Xilinx SDK has a bug
-    <instruction-set>cortex-r5+vfpv3-d16:<floating-point-abi>softfp
 
     <linkflags>"-Wl,--start-group -Wl,-lstdc++ -Wl,--end-group"
   ;

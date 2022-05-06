@@ -5,17 +5,18 @@
 
 path-constant root : ../.. ;
 
+project
+  : default-build
+    <platform>freertos--cortex-r5+vfpv3-d16-softfp
+  : requirements
+    <link>static
+  ;
+
 explicit ws ;
 xsdkws ws
   : # sources
     $(zcu102-hdf)
   : # requirements
-    <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5+vfpv3-d16
-
     <xsdk-template>"OpenAMP RPC Demo"
 
     <xsdk-library>libmetal
@@ -39,12 +40,6 @@ exe rpc-demo
 
     ws
   : # requirements
-    <target-os>freertos
-
-    <link>static
-
-    <instruction-set>cortex-r5+vfpv3-d16
-
     <linkflags>"-Wl,-T -Wl,$(root)/test/zcu102-rpc-demo/lscript.ld"
 
     <dependency>ws

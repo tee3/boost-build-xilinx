@@ -3,9 +3,51 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+import feature ;
+
 import xsdk ;
 
 import errors ;
+
+# generate a composite feature for all combinations
+local target-os-values = elf freertos ;
+local architecture-values = "" arm ;
+local instruction-set-values = cortex-a9 cortex-a9+vfpv3 cortex-a53 cortex-r5 cortex-r5+vfpv3-d16 ;
+local floating-point-abi-values = hard softfp soft "" ;
+
+feature.feature platform
+  :
+    # defined below
+  :
+    optional
+    composite
+    propagated
+    link-incompatible
+  ;
+
+for local target-os in $(target-os-values)
+{
+  for local architecture in $(architecture-values)
+  {
+    for local instruction-set in $(instruction-set-values)
+    {
+      for local floating-point-abi in $(floating-point-abi-values)
+      {
+        local platform = $(target-os)-$(architecture)-$(instruction-set)-$(floating-point-abi) ;
+
+        feature.extend platform : $(platform) ;
+
+        feature.compose <platform>$(platform)
+          : # composite-properties
+            <target-os>$(target-os)
+            <architecture>$(architecture)
+            <instruction-set>$(instruction-set)
+            <floating-point-abi>$(floating-point-abi)
+          ;
+      }
+    }
+  }
+}
 
 project
   : default-build
