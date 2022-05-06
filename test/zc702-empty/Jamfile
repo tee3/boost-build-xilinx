@@ -8,20 +8,12 @@ project
     # @todo Xilinx cortex-a9 boot.S requires vfpv3
     <platform>elf--cortex-a9+vfpv3-hard
     <platform>elf--cortex-a9+vfpv3-softfp
-    # @todo issue in Xilinx tool prevents this
-    # <platform>elf--cortex-a9+vfpv3-soft
     <platform>elf-arm-cortex-a9+vfpv3-hard
     <platform>elf-arm-cortex-a9+vfpv3-softfp
-    # @todo issue in Xilinx tool prevents this
-    # <platform>elf-arm-cortex-a9+vfpv3-soft
     <platform>freertos--cortex-a9+vfpv3-hard
     <platform>freertos--cortex-a9+vfpv3-softfp
-    # @todo issue in Xilinx tool prevents this
-    # <platform>freertos--cortex-a9+vfpv3-soft
     <platform>freertos-arm-cortex-a9+vfpv3-hard
     <platform>freertos-arm-cortex-a9+vfpv3-softfp
-    # @todo issue in Xilinx tool prevents this
-    # <platform>freertos-arm-cortex-a9+vfpv3-soft
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1
