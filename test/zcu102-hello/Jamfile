@@ -8,14 +8,12 @@ project
     <platform>elf--cortex-a53-hard
     <platform>elf--cortex-a53-softfp
     <platform>elf--cortex-a53-soft
-    # @todo enable soon
-    # <platform>elf--cortex-r5+vfpv3-d16-hard
+    <platform>elf--cortex-r5+vfpv3-d16-hard
     <platform>elf--cortex-r5+vfpv3-d16-softfp
     <platform>elf-arm-cortex-a53-hard
     <platform>elf-arm-cortex-a53-softfp
     <platform>elf-arm-cortex-a53-soft
-    # @todo enable soon
-    # <platform>elf-arm-cortex-r5+vfpv3-d16-hard
+    <platform>elf-arm-cortex-r5+vfpv3-d16-hard
     <platform>elf-arm-cortex-r5+vfpv3-d16-softfp
     <platform>freertos--cortex-a53-hard
     <platform>freertos--cortex-a53-softfp
@@ -33,7 +31,6 @@ project
     <link>static
   ;
 
-# @todo add more configurations for freertos
 explicit ws ;
 xsdkws ws
   : # sources
