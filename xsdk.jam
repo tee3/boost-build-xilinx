@@ -307,11 +307,11 @@ feature.feature xsdk-fpga
     xczu6eg
     xczu7eg
   :
+    optional
     propagated
     link-incompatible
     symmetric
   ;
-feature.set-default xsdk-fpga : xczu7eg ;
 
 feature.feature xsdk-os
   : # values
