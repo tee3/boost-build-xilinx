@@ -18,14 +18,12 @@ project
     <platform>freertos--cortex-a53-hard
     <platform>freertos--cortex-a53-softfp
     <platform>freertos--cortex-a53-soft
-    # @todo required since Xilinx SDK has a bug
-    # <platform>freertos--cortex-r5+vfpv3-d16-hard
+    <platform>freertos--cortex-r5+vfpv3-d16-hard
     <platform>freertos--cortex-r5+vfpv3-d16-softfp
     <platform>freertos-arm-cortex-a53-hard
     <platform>freertos-arm-cortex-a53-softfp
     <platform>freertos-arm-cortex-a53-soft
-    # @todo required since Xilinx SDK has a bug
-    # <platform>freertos-arm-cortex-r5+vfpv3-d16-hard
+    <platform>freertos-arm-cortex-r5+vfpv3-d16-hard
     <platform>freertos-arm-cortex-r5+vfpv3-d16-softfp
   : requirements
     <link>static

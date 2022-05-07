@@ -1113,6 +1113,19 @@ rule generate-build ( targets + : sources + : properties * )
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
 
+  # @todo hack workaround the Cortex-R5 Makfile for 2018.3
+  if $(xsdk-os) = freertos10_xilinx && $(xsdk-instruction-set) = cortexr5
+  {
+    lines +=
+      "set makefile_f [open $(ws)/bsp/$(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id)/libsrc/$(xsdk-os)_v1_2/src/Makefile r]"
+      "set makefile_data [regsub -all { -mcpu=cortex-r5 -mfpu=vfpv3-d16 -mfloat-abi=softfp} [read $makefile_f] \"\"]"
+      "close $makefile_f"
+      "set makefile_f [open $(ws)/bsp/$(xsdk-processor-prefix)_$(xsdk-instruction-set)_$(xsdk-processor-id)/libsrc/$(xsdk-os)_v1_2/src/Makefile w]"
+      "puts -nonewline $makefile_f $makefile_data"
+      "close $makefile_f"
+      ;
+  }
+
   # build the bsp
   lines += "run-checked projects -build -type bsp -name bsp" ;
 
