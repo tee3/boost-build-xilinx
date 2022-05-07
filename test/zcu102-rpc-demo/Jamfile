@@ -7,6 +7,8 @@ path-constant root : ../.. ;
 
 project
   : default-build
+    # @todo required since Xilinx SDK has a bug
+    # <platform>freertos--cortex-r5+vfpv3-d16-hard
     <platform>freertos--cortex-r5+vfpv3-d16-softfp
   : requirements
     <link>static

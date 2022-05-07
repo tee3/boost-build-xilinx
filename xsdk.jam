@@ -4,6 +4,8 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 # Boost.Build support for the Xilinx SDK (XSDK).
+#
+# @todo elf, cortex-r5 is not supported by Xilinx SDK (boot.S requires vfpv3-d16)
 
 #| tag::doc[]
 
