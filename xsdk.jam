@@ -486,6 +486,14 @@ type.register TCL : tcl ;
 
 rule init ( version ? : command * : options * )
 {
+  if $(version)
+  {
+    if ! $(command)
+    {
+      command = /opt/Xilinx/SDK/$(version)/bin/xsct ;
+    }
+  }
+
   # Check that the host operating system is supported.  If it is not,
   # continue without configuring so we can still build targets that do
   # not need this toolset.
