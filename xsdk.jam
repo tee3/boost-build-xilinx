@@ -553,6 +553,23 @@ rule init ( version ? : command * : options * )
     }
 
     toolset.flags xsdk .xsct $(condition) : $(.root)/bin/xsct ;
+
+    # @todo for now just use the Xilinx SDK compiler
+    toolset.flags xsdk .compiler <instruction-set>cortex-a9 : $(.root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>cortex-a9 : $(.root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-ar ;
+    toolset.flags xsdk .compiler <instruction-set>cortex-a9+vfpv3 : $(.root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>cortex-a9+vfpv3 : $(.root)/gnu/aarch32/lin/gcc-arm-none-eabi/bin/arm-none-eabi-ar ;
+
+    toolset.flags xsdk .compiler <instruction-set>cortex-a53 : $(.root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>cortex-a53 : $(.root)/gnu/aarch64/lin/aarch64-none/bin/aarch64-none-elf-ar ;
+
+    toolset.flags xsdk .compiler <instruction-set>cortex-r5 : $(.root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>cortex-r5 : $(.root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-ar ;
+    toolset.flags xsdk .compiler <instruction-set>cortex-r5+vfpv3-d16 : $(.root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>cortex-r5+vfpv3-d16 : $(.root)/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-ar ;
+
+    toolset.flags xsdk .compiler <instruction-set>microblaze : $(.root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-gcc ;
+    toolset.flags xsdk .archiver <instruction-set>microblaze : $(.root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-ar ;
   }
   else
   {
@@ -1110,6 +1127,19 @@ rule generate-build ( targets + : sources + : properties * )
   lines += "updatemss -mss $(ws)/bsp/system.mss" ;
   lines += "regenbsp -bsp bsp" ;
 
+  # @todo use COMPILER and ARCHIVER from environment
+  lines +=
+    "set makefile_f [open $(ws)/bsp/Makefile r]"
+    "set makefile_data [read $makefile_f]"
+    # \044 is $ to avoid interpolation
+    "set makefile_data [regsub -all {\"COMPILER=[^\"]+\" } $makefile_data \"\\\"COMPILER=\\044(COMPILER)\\\" \"]"
+    "set makefile_data [regsub -all {\"ARCHIVER=[^\"]+\" } $makefile_data \"\\\"ARCHIVER=\\044(ARCHIVER)\\\" \"]"
+    "close $makefile_f"
+    "set makefile_f [open $(ws)/bsp/Makefile w]"
+    "puts -nonewline $makefile_f $makefile_data"
+    "close $makefile_f"
+    ;
+
   # @todo hack workaround the Cortex-R5 Makfile for 2018.3
   if $(xsdk-os) = freertos10_xilinx && $(xsdk-instruction-set) = cortexr5
   {
@@ -1360,5 +1390,10 @@ rule generate-ws ( targets + : sources + : properties * )
 
 actions generate-ws
 {
+  # @todo generated system accepts this from the environment
+  export COMPILER="$(.compiler)"
+  # @todo generated system accepts this from the environment
+  export ARCHIVER="$(.archiver)"
+
   $(RMDIR) "$(<[1])" && "$(.xsct)" -nodisp "$(>[1])" && $(TOUCH) "$(<[2])"
 }
