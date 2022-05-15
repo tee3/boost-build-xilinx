@@ -481,7 +481,6 @@ type.register XSCT : xsct ;
 type.register XSCTRUN : xsctrun ;
 
 type.register MSS : mss ;
-type.register BIT : bit ;
 type.register TCL : tcl ;
 
 rule init ( version ? : command * : options * )
@@ -814,16 +813,6 @@ class ws-generator : generator
     t = [ class.new file-target $(ws)/hw/system : HDF : $(project) : $(a) ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
-    if $(hdf-name) = system
-    {
-      t = [ class.new file-target $(ws)/hw/design_1_wrapper : BIT : $(project) : $(a) ] ;
-    }
-    else
-    {
-      t = [ class.new file-target $(ws)/hw/$(hdf-name)_cfg : BIT : $(project) : $(a) ] ;
-    }
-    virtual-targets += [ virtual-target.register $(t) ] ;
-
     t = [ class.new file-target $(ws)/hw/$(xsdk-processor-prefix)_init : TCL : $(project) : $(a)  ] ;
     virtual-targets += [ virtual-target.register $(t) ] ;
 
@@ -955,7 +944,7 @@ class ws-generator : generator
 }
 
 # @todo loop and generate many generators for each supported configuration?
-generators.register [ class.new ws-generator true : HDF : XSDKWS XSCT XSCTRUN BIT MSS TCL : <toolset>gcc <link>static ] ;
+generators.register [ class.new ws-generator true : HDF : XSDKWS XSCT XSCTRUN MSS TCL : <toolset>gcc <link>static ] ;
 
 # Generate an XSCT script to build the XSDK Workspace.
 rule generate-build ( targets + : sources + : properties * )
