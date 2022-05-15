@@ -967,7 +967,8 @@ rule generate-build ( targets + : sources + : properties * )
   local source = $(sources[1]) ;
   local ws-dir = [ on $(target) return $(LOCATE) ] ;
   local ws-name = $(target:G=) ;
-  local ws = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws-tmp = $(ws-dir)/$(ws-name:S=.xsdkws) ;
+  local ws = [ path.root $(ws-tmp) [ path.pwd ] ] ;
 
   local hdf-dir = [ on $(source) return $(LOCATE) ] ;
   local hdf-name = $(source:G=) ;
