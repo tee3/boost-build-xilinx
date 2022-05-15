@@ -61,10 +61,6 @@ workspace named as defined in the rule, `$(name)`, and provide
 This target will also create several supporting XSCT scripts in the
 build directory.
 
-The `print.tcl` script will print out all the available configuration
-options for the XSDK Workspace.  This can be useful when developing
-the configuration for a project.
-
 The `run.tcl` script take the any compatible program file as an
 argument and will run the program.  This script can be used with the
 Boost.Build `testing` module as a `<testing.launcher>`.
