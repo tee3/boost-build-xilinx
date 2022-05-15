@@ -17,16 +17,6 @@ project
     <platform>elf-arm-cortex-a53-soft
     <platform>elf-arm-cortex-r5+vfpv3-d16-hard
     <platform>elf-arm-cortex-r5+vfpv3-d16-softfp
-    <platform>freertos--cortex-a53-hard
-    <platform>freertos--cortex-a53-softfp
-    <platform>freertos--cortex-a53-soft
-    <platform>freertos--cortex-r5+vfpv3-d16-hard
-    <platform>freertos--cortex-r5+vfpv3-d16-softfp
-    <platform>freertos-arm-cortex-a53-hard
-    <platform>freertos-arm-cortex-a53-softfp
-    <platform>freertos-arm-cortex-a53-soft
-    <platform>freertos-arm-cortex-r5+vfpv3-d16-hard
-    <platform>freertos-arm-cortex-r5+vfpv3-d16-softfp
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1

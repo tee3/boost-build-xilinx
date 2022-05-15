@@ -10,7 +10,7 @@ import xsdk ;
 import errors ;
 
 # generate a composite feature for all combinations
-local target-os-values = elf freertos ;
+local target-os-values = elf ;
 local architecture-values = "" arm ;
 local instruction-set-values = cortex-a9 cortex-a9+vfpv3 cortex-a53 cortex-r5 cortex-r5+vfpv3-d16 ;
 local floating-point-abi-values = hard softfp soft "" ;
@@ -71,5 +71,4 @@ build-project zc702-empty ;
 
 build-project zcu102-empty ;
 build-project zcu102-hello ;
-build-project zcu102-rpc-demo ;
 build-project zcu102-complex ;
