@@ -61,7 +61,7 @@ workspace named as defined in the rule, `$(name)`, and provide
 This target will also create several supporting XSCT scripts in the
 build directory.
 
-The `run.tcl` script take the any compatible program file as an
+The `run.xsct` script take the any compatible program file as an
 argument and will run the program.  This script can be used with the
 Boost.Build `testing` module as a `<testing.launcher>`.
 
@@ -762,14 +762,11 @@ class ws-generator : generator
     assert.variable-not-empty xsdk-processor-prefix ;
     assert.variable-not-empty xsdk-processor-id ;
 
-    local xsct-target ;
-    {
-      local a = [ class.new action $(sources) : xsdk.generate-build : $(property-set) ] ;
-      local t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
-      virtual-targets += [ virtual-target.register $(t) ] ;
+    local a = [ class.new action $(sources) : xsdk.generate-build : $(property-set) ] ;
+    local t = [ class.new file-target $(name) : XSCT : $(project) : $(a) ] ;
+    virtual-targets += [ virtual-target.register $(t) ] ;
 
-      xsct-target = $(t) ;
-    }
+    xsct-target = $(t) ;
 
     local a = [ class.new action $(xsct-target) $(sources) : xsdk.generate-ws : $(property-set) ] ;
 
@@ -791,7 +788,7 @@ class ws-generator : generator
 
     {
       local a = [ class.new action $(xsctrun-target) $(sources) : xsdk.generate-run : $(property-set) ] ;
-      local t = [ class.new file-target run : TCL : $(project) : $(a) ] ;
+      local t = [ class.new file-target run : XSCT : $(project) : $(a) ] ;
       virtual-targets += [ virtual-target.register $(t) ] ;
     }
 
@@ -1208,10 +1205,10 @@ rule generate-build ( targets + : sources + : properties * )
 # Generate an XSCT script to run a program built with the XSDK
 # Workspace.
 #
-# @todo The generated run.tcl probably only works for the Cortex-R5.
+# @todo The generated run.xsct probably only works for the Cortex-R5.
 # There is significant work to get it working for all possible
 # targets.  The best approach (which may not be possible) would be to
-# have the xsct tool generate the run.tcl file.
+# have the xsct tool generate the run.xsct file.
 rule generate-run ( targets + : sources + : properties * )
 {
   assert.equal [ sequence.length $(targets) ] : 1 ;
