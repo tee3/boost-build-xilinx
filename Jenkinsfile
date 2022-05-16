@@ -79,7 +79,6 @@ pipeline {
                 sh '''#!/bin/bash
                 boost_version_name=$(echo ${boost_version} | sed 's/\\./_/g')
 
-                source /opt/Xilinx/SDK/2018.3/settings64.sh
                 export BOOST_BUILD_PATH=$(pwd)/lib/boost_${boost_version_name}/tools/build:$(pwd)
                 # @todo disable parallelism until dependencies are corrected
                 cd test && $(pwd)/../lib/boost_${boost_version_name}/b2 --verbose-test
