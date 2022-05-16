@@ -481,6 +481,7 @@ type.register TCL : tcl ;
 
 rule init ( version ? : command * : options * )
 {
+  local possible-paths ;
   if $(version)
   {
     if ! $(command)
@@ -489,12 +490,19 @@ rule init ( version ? : command * : options * )
     }
   }
 
+  if ! $(command)
+  {
+    local possible-roots = [ GLOB /opt/Xilinx/SDK : * ] ;
+
+    possible-paths = $(possible-roots)/bin ;
+  }
+
   # Check that the host operating system is supported.  If it is not,
   # continue without configuring so we can still build targets that do
   # not need this toolset.
   if [ os.name ] = NT || [ os.name ] = CYGWIN || [ os.name ] = LINUX
   {
-    command = [ common.get-invocation-command xsdk : xsct : $(command) ] ;
+    command = [ common.get-invocation-command xsdk : xsct : $(command)  : $(possible-paths) ] ;
 
     if $(command)
     {
