@@ -13,6 +13,7 @@ import errors ;
 local target-os-values = elf ;
 local architecture-values = "" arm ;
 local instruction-set-values = cortex-a9 cortex-a9+vfpv3 cortex-a53 cortex-r5 cortex-r5+vfpv3-d16 ;
+local floating-point-unit-values = "" nofp vfpv3 vfpv3-d16 ;
 local floating-point-abi-values = hard softfp soft "" ;
 
 feature.feature platform
@@ -31,19 +32,23 @@ for local target-os in $(target-os-values)
   {
     for local instruction-set in $(instruction-set-values)
     {
-      for local floating-point-abi in $(floating-point-abi-values)
+      for local floating-point-unit in $(floating-point-unit-values)
       {
-        local platform = $(target-os)-$(architecture)-$(instruction-set)-$(floating-point-abi) ;
+	for local floating-point-abi in $(floating-point-abi-values)
+	{
+	  local platform = $(target-os)-$(architecture)-$(instruction-set)-$(floating-point-unit)-$(floating-point-abi) ;
 
-        feature.extend platform : $(platform) ;
+	  feature.extend platform : $(platform) ;
 
-        feature.compose <platform>$(platform)
-          : # composite-properties
-            <target-os>$(target-os)
-            <architecture>$(architecture)
-            <instruction-set>$(instruction-set)
-            <floating-point-abi>$(floating-point-abi)
-          ;
+	  feature.compose <platform>$(platform)
+	    : # composite-properties
+	      <target-os>$(target-os)
+	      <architecture>$(architecture)
+	      <instruction-set>$(instruction-set)
+	      <floating-point-unit>$(floating-point-unit)
+	      <floating-point-abi>$(floating-point-abi)
+	    ;
+	}
       }
     }
   }

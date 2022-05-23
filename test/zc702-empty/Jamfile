@@ -6,10 +6,14 @@
 project
   : default-build
     # @todo Xilinx cortex-a9 boot.S requires vfpv3
-    <platform>elf--cortex-a9+vfpv3-hard
-    <platform>elf--cortex-a9+vfpv3-softfp
-    <platform>elf-arm-cortex-a9+vfpv3-hard
-    <platform>elf-arm-cortex-a9+vfpv3-softfp
+    <platform>elf--cortex-a9+vfpv3--hard
+    <platform>elf--cortex-a9+vfpv3--softfp
+    <platform>elf--cortex-a9-vfpv3-hard
+    <platform>elf--cortex-a9-vfpv3-softfp
+    <platform>elf-arm-cortex-a9+vfpv3--hard
+    <platform>elf-arm-cortex-a9+vfpv3--softfp
+    <platform>elf-arm-cortex-a9-vfpv3-hard
+    <platform>elf-arm-cortex-a9-vfpv3-softfp
 
     <xsdk-processor-id>0
     <xsdk-processor-id>1
