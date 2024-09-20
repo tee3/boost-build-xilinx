@@ -3,7 +3,7 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-FROM docker.inradar.net/ubuntu-20.04-boost:0.2.17
+FROM docker.inradar.net/ubuntu-20.04-boost:0.2.21
 
 RUN apt-get -y update && apt-get -y install \
     libidn11 \
