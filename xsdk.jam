@@ -129,10 +129,47 @@ This module supports any `gcc` toolset.  The user is responsible for
 configuring the desired toolset for each processor.
 
 Note that in order to choose the correct toolset, the toolset should
-be made conditional on the `instruction-set` in the build system.
-One approach for doing this would be to set project requirements in
-the Jamroot.  This is required because the `toolset` feature cannot
-set in `usage-requirements`.
+be made conditional on the `instruction-set` in the build system.  One
+approach for doing this would be to set project requirements in the
+Jamroot or project-config.jam.  This is required because the `toolset`
+feature cannot set in `usage-requirements`.
+
+.`project-config.jam`
+[source, jam]
+----
+project project-config
+  : requirements
+    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a9+vfpv3:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
+    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
+    <instruction-set>cortex-r5+vfpv3-d16:<toolset>gcc-xsdkarmr5
+    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
+  ;
+----
+
+The example below shows the configuration of the toolsets to the
+compilers as provided by ARM.  Note that there is nothing special
+about the name of the toolset, it is defined by the user.
+
+.`project-config.jam`
+[source, jam]
+----
+project project-config
+  : requirements
+    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a9+vfpv3:<toolset>gcc-xsdkaarch32
+    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
+    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
+    <instruction-set>cortex-r5+vfpv3-d16:<toolset>gcc-xsdkarmr5
+    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
+  ;
+
+using gcc : xsdkaarch32 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+using gcc : xsdkaarch64 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+using gcc : xsdkarmr5 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
+using gcc : xsdkmicroblaze : /usr/local/microblaze/XXX/bin/microblaze-xilinx-elf-g++ ;
+----
 
 The example below shows the configuration of the toolsets delivered
 with the Xilinx SDK for each different processor supported by the
@@ -145,16 +182,6 @@ user.
 [source, jam]
 ----
 import xsdk ;
-
-project project-config
-  : requirements
-    <instruction-set>cortex-a9:<toolset>gcc-xsdkaarch32
-    <instruction-set>cortex-a9+vfpv3:<toolset>gcc-xsdkaarch32
-    <instruction-set>cortex-a53:<toolset>gcc-xsdkaarch64
-    <instruction-set>cortex-r5:<toolset>gcc-xsdkarmr5
-    <instruction-set>cortex-r5+vfpv3-d16:<toolset>gcc-xsdkarmr5
-    <instruction-set>microblaze:<toolset>gcc-xsdkmicroblaze
-  ;
 
 using xsdk ;
 
@@ -172,7 +199,7 @@ else
   using gcc : xsdkaarch32 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
   using gcc : xsdkaarch64 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
   using gcc : xsdkarmr5 : /usr/local/arm/gcc-arm-none-eabi-7-2018-q2-update/bin/arm-none-eabi-g++ ;
-  # using gcc : xsdkmicroblaze : $(xsdk-root)/gnu/microblaze/lin/bin/microblaze-xilinx-elf-g++ ;
+  using gcc : xsdkmicroblaze : /usr/local/microblaze/XXX/bin/microblaze-xilinx-elf-g++ ;
 }
 ----
 
